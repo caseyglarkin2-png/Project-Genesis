@@ -1,9 +1,36 @@
 services:
+  # Backend API Service
   - type: web
     name: project-genesis-backend
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     plan: free
     branch: main
     rootDir: backend
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12
+      - key: PORT
+        generateValue: true
+    healthCheckPath: /api/score?lat=34.754&lon=-78.789
+
+  # Frontend Next.js Service
+  - type: web
+    name: project-genesis-frontend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+    branch: main
+    rootDir: frontend
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: project-genesis-backend
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: NEXT_PUBLIC_MAPBOX_TOKEN
+        sync: false  # This needs to be set manually in Render dashboard
