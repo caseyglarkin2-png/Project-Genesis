@@ -125,44 +125,47 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
         width: '800px',
         maxHeight: '90vh',
         overflow: 'auto',
-        background: 'linear-gradient(135deg, rgba(0, 10, 20, 0.98) 0%, rgba(10, 5, 25, 0.98) 100%)',
-        border: '1px solid rgba(0, 255, 255, 0.4)',
+        background: 'rgba(15, 20, 25, 0.98)',
+        border: '1px solid rgba(59, 130, 246, 0.3)',
         borderRadius: '12px',
-        color: '#e0e0e0',
-        fontFamily: '"JetBrains Mono", monospace',
+        color: '#E2E8F0',
+        fontFamily: '"Inter", -apple-system, sans-serif',
         zIndex: 3000,
-        boxShadow: '0 0 60px rgba(0, 255, 255, 0.3)',
-        animation: 'fadeIn 0.3s ease-out'
+        boxShadow: '0 25px 80px rgba(0, 0, 0, 0.5)',
+        animation: 'fadeIn 0.2s ease-out'
       }}>
         {/* Header */}
         <div style={{
           padding: '20px 25px',
-          borderBottom: '1px solid rgba(0, 255, 255, 0.2)',
+          borderBottom: '1px solid rgba(59, 130, 246, 0.2)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          background: 'linear-gradient(90deg, rgba(0, 255, 0, 0.1) 0%, rgba(0, 255, 255, 0.1) 100%)'
+          background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(30, 41, 59, 0.3) 100%)'
         }}>
           <h2 style={{ 
             margin: 0, 
-            fontSize: '1.1rem',
+            fontSize: '1rem',
             letterSpacing: '2px',
             textTransform: 'uppercase',
-            background: 'linear-gradient(90deg, #00ff00, #00ffff)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            color: '#3B82F6',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
           }}>
-            💰 ROI Calculator
+            <span style={{ fontSize: '1.1rem' }}>◈</span> ROI Calculator
           </h2>
           <button 
             onClick={onClose}
             style={{ 
-              background: 'rgba(255, 0, 0, 0.1)', 
-              border: '1px solid rgba(255, 0, 0, 0.3)', 
-              color: '#ff4444', 
+              background: 'rgba(239, 68, 68, 0.1)', 
+              border: '1px solid rgba(239, 68, 68, 0.3)', 
+              color: '#EF4444', 
               cursor: 'pointer', 
               padding: '6px 12px',
-              borderRadius: '4px'
+              borderRadius: '6px',
+              fontWeight: '500'
             }}
           >
             ✕
@@ -170,7 +173,7 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(148, 163, 184, 0.1)' }}>
           {(['facility', 'network'] as const).map(tab => (
             <button
               key={tab}
@@ -178,19 +181,20 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
               style={{
                 flex: 1,
                 padding: '15px',
-                background: activeTab === tab ? 'rgba(0, 255, 255, 0.1)' : 'transparent',
+                background: activeTab === tab ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
                 border: 'none',
-                borderBottom: activeTab === tab ? '2px solid #00ffff' : '2px solid transparent',
-                color: activeTab === tab ? '#00ffff' : '#666',
+                borderBottom: activeTab === tab ? '2px solid #3B82F6' : '2px solid transparent',
+                color: activeTab === tab ? '#3B82F6' : '#64748B',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
-                fontSize: '0.85rem',
+                fontSize: '0.75rem',
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
-                transition: 'all 0.3s ease'
+                fontWeight: '500',
+                transition: 'all 0.2s ease'
               }}
             >
-              {tab === 'facility' ? '🏭 Single Facility' : '🌐 Network-Wide'}
+              {tab === 'facility' ? '◇ Single Facility' : '◈ Network-Wide'}
             </button>
           ))}
         </div>
@@ -199,14 +203,14 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
         <div style={{ padding: '25px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
           {/* Left: Inputs */}
           <div>
-            <h3 style={{ color: '#00ffff', margin: '0 0 15px 0', fontSize: '0.85rem', letterSpacing: '1px' }}>
-              📊 YOUR METRICS
+            <h3 style={{ color: '#3B82F6', margin: '0 0 15px 0', fontSize: '0.75rem', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: '600' }}>
+              ◎ Your Metrics
             </h3>
             
             {activeTab === 'network' && (
               <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', color: '#888', fontSize: '0.7rem', marginBottom: '5px' }}>
-                  NUMBER OF FACILITIES
+                <label style={{ display: 'block', color: '#64748B', fontSize: '0.65rem', marginBottom: '5px', textTransform: 'uppercase' }}>
+                  Number of Facilities
                 </label>
                 <input
                   type="number"
@@ -214,9 +218,9 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
                   onChange={(e) => setNetworkSize(Number(e.target.value))}
                   style={{
                     width: '100%',
-                    background: 'rgba(0,0,0,0.4)',
-                    border: '1px solid rgba(0, 255, 255, 0.3)',
-                    color: '#00ffff',
+                    background: 'rgba(30, 41, 59, 0.6)',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                    color: '#3B82F6',
                     padding: '10px',
                     borderRadius: '4px',
                     fontSize: '1.2rem',
@@ -228,15 +232,15 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
-                { key: 'trucksPerDay', label: 'Trucks per Day', icon: '🚛' },
-                { key: 'avgTurnTime', label: 'Avg Turn Time (min)', icon: '⏱️' },
-                { key: 'detentionCostPerHour', label: 'Detention Cost/Hour ($)', icon: '💵' },
-                { key: 'yardChecksPerDay', label: 'Manual Yard Checks/Day', icon: '👁️' },
-                { key: 'laborCostPerHour', label: 'Labor Cost/Hour ($)', icon: '👷' },
-                { key: 'ghostSearchesPerWeek', label: 'Ghost Searches/Week', icon: '👻' },
+                { key: 'trucksPerDay', label: 'Trucks per Day', icon: '◇' },
+                { key: 'avgTurnTime', label: 'Avg Turn Time (min)', icon: '◷' },
+                { key: 'detentionCostPerHour', label: 'Detention Cost/Hour ($)', icon: '◆' },
+                { key: 'yardChecksPerDay', label: 'Manual Yard Checks/Day', icon: '◎' },
+                { key: 'laborCostPerHour', label: 'Labor Cost/Hour ($)', icon: '◉' },
+                { key: 'ghostSearchesPerWeek', label: 'Ghost Searches/Week', icon: '◌' },
               ].map(({ key, label, icon }) => (
                 <div key={key}>
-                  <label style={{ display: 'block', color: '#666', fontSize: '0.65rem', marginBottom: '4px' }}>
+                  <label style={{ display: 'block', color: '#64748B', fontSize: '0.6rem', marginBottom: '4px', textTransform: 'uppercase' }}>
                     {icon} {label}
                   </label>
                   <input
@@ -245,12 +249,12 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
                     onChange={(e) => setInputs({ ...inputs, [key]: Number(e.target.value) })}
                     style={{
                       width: '100%',
-                      background: 'rgba(0,0,0,0.3)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: '#fff',
+                      background: 'rgba(30, 41, 59, 0.5)',
+                      border: '1px solid rgba(148, 163, 184, 0.15)',
+                      color: '#E2E8F0',
                       padding: '8px',
-                      borderRadius: '4px',
-                      fontSize: '0.9rem'
+                      borderRadius: '6px',
+                      fontSize: '0.85rem'
                     }}
                   />
                 </div>
@@ -260,31 +264,30 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
 
           {/* Right: Results */}
           <div>
-            <h3 style={{ color: '#00ff00', margin: '0 0 15px 0', fontSize: '0.85rem', letterSpacing: '1px' }}>
-              📈 PROJECTED SAVINGS
+            <h3 style={{ color: '#10B981', margin: '0 0 15px 0', fontSize: '0.75rem', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: '600' }}>
+              ▲ Projected Savings
             </h3>
             
             {/* Total ROI Card */}
             <div style={{
-              background: 'linear-gradient(135deg, rgba(0, 255, 0, 0.15) 0%, rgba(0, 255, 255, 0.1) 100%)',
-              border: '1px solid rgba(0, 255, 0, 0.4)',
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
               borderRadius: '8px',
               padding: '20px',
               textAlign: 'center',
               marginBottom: '20px'
             }}>
-              <div style={{ color: '#888', fontSize: '0.7rem', marginBottom: '5px', textTransform: 'uppercase' }}>
+              <div style={{ color: '#94A3B8', fontSize: '0.65rem', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 {activeTab === 'facility' ? 'Annual Facility ROI' : 'Annual Network ROI'}
               </div>
               <div style={{ 
-                fontSize: '2.5rem', 
-                fontWeight: 'bold', 
-                color: '#00ff00',
-                textShadow: '0 0 20px rgba(0, 255, 0, 0.5)'
+                fontSize: '2.2rem', 
+                fontWeight: '700', 
+                color: '#10B981'
               }}>
                 {formatCurrency(activeTab === 'facility' ? facilityROI.totalAnnualROI : networkROI.totalAnnualROI)}
               </div>
-              <div style={{ color: '#00ffff', fontSize: '0.8rem', marginTop: '5px' }}>
+              <div style={{ color: '#3B82F6', fontSize: '0.75rem', marginTop: '5px', fontWeight: '500' }}>
                 {facilityROI.paybackMonths} month payback
               </div>
             </div>
@@ -292,21 +295,21 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
             {/* Breakdown */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[
-                { label: 'Detention Savings', value: activeTab === 'facility' ? facilityROI.annualDetentionSavings : networkROI.annualDetentionSavings, color: '#00ff00', icon: '⏱️' },
-                { label: 'Labor Savings', value: activeTab === 'facility' ? facilityROI.annualLaborSavings : networkROI.annualLaborSavings, color: '#00ffff', icon: '👷' },
-                { label: 'Ghost Search Savings', value: activeTab === 'facility' ? facilityROI.annualGhostSavings : networkROI.annualGhostSavings, color: '#ff00ff', icon: '👻' },
+                { label: 'Detention Savings', value: activeTab === 'facility' ? facilityROI.annualDetentionSavings : networkROI.annualDetentionSavings, color: '#10B981', icon: '◷' },
+                { label: 'Labor Savings', value: activeTab === 'facility' ? facilityROI.annualLaborSavings : networkROI.annualLaborSavings, color: '#3B82F6', icon: '◉' },
+                { label: 'Ghost Search Savings', value: activeTab === 'facility' ? facilityROI.annualGhostSavings : networkROI.annualGhostSavings, color: '#8B5CF6', icon: '◌' },
               ].map(({ label, value, color, icon }) => (
                 <div key={label} style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '10px 12px',
-                  background: 'rgba(0,0,0,0.3)',
-                  borderRadius: '4px',
+                  background: 'rgba(30, 41, 59, 0.4)',
+                  borderRadius: '6px',
                   borderLeft: `3px solid ${color}`
                 }}>
-                  <span style={{ color: '#888', fontSize: '0.75rem' }}>{icon} {label}</span>
-                  <span style={{ color, fontWeight: 'bold' }}>{formatCurrency(value)}</span>
+                  <span style={{ color: '#94A3B8', fontSize: '0.7rem' }}>{icon} {label}</span>
+                  <span style={{ color, fontWeight: '600' }}>{formatCurrency(value)}</span>
                 </div>
               ))}
             </div>
@@ -315,15 +318,15 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
             <div style={{
               marginTop: '15px',
               padding: '12px',
-              background: 'rgba(255, 255, 0, 0.1)',
-              border: '1px solid rgba(255, 255, 0, 0.3)',
-              borderRadius: '6px',
+              background: 'rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              borderRadius: '8px',
               textAlign: 'center'
             }}>
-              <div style={{ color: '#ffff00', fontSize: '1.5rem', fontWeight: 'bold' }}>
+              <div style={{ color: '#F59E0B', fontSize: '1.4rem', fontWeight: '700' }}>
                 +{facilityROI.throughputIncrease}%
               </div>
-              <div style={{ color: '#888', fontSize: '0.7rem' }}>Throughput Increase</div>
+              <div style={{ color: '#94A3B8', fontSize: '0.65rem', textTransform: 'uppercase' }}>Throughput Increase</div>
             </div>
           </div>
         </div>
@@ -331,11 +334,11 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
         {/* Footer */}
         <div style={{
           padding: '15px 25px',
-          borderTop: '1px solid rgba(255,255,255,0.1)',
-          background: 'rgba(0,0,0,0.3)',
+          borderTop: '1px solid rgba(148, 163, 184, 0.1)',
+          background: 'rgba(10, 14, 20, 0.4)',
           textAlign: 'center',
-          fontSize: '0.7rem',
-          color: '#555'
+          fontSize: '0.65rem',
+          color: '#64748B'
         }}>
           Based on industry averages: 30% turn time reduction, 50% fewer yard checks, 80% ghost reduction
         </div>

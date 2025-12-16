@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Project Genesis - Yard Builder AI',
-  description: 'Genesis accelerates adoption with intelligent yard management',
+  title: 'FreightRoll - Autonomous Orchestration',
+  description: 'Facility Orchestration & Autonomous Handoffs - No Friction.',
 }
 
 export default function RootLayout({

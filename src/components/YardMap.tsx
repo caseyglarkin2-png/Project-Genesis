@@ -558,7 +558,7 @@ export default function YardMap() {
       width: '100vw', 
       height: '100vh', 
       position: 'relative',
-      background: '#0a0a0f'
+      background: '#0A0E14'
     }}>
       {/* Command Header */}
       <CommandHeader />
@@ -568,32 +568,32 @@ export default function YardMap() {
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         ref={mapRef}
-        style={{width: '100%', height: '100%', marginTop: '60px'}}
+        style={{width: '100%', height: '100%', marginTop: '56px'}}
         mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
         mapboxAccessToken={MAPBOX_TOKEN}
         terrain={{source: 'mapbox-dem', exaggeration: 1.5}} 
       >
       </Map>
       
-      {/* Vignette Overlay for cinematic effect */}
+      {/* Vignette Overlay - Industrial Fluidity */}
       <div style={{
         position: 'absolute',
-        top: 60,
+        top: 56,
         left: 0,
         right: 0,
         bottom: 0,
         pointerEvents: 'none',
         background: `
-          radial-gradient(ellipse at center, transparent 40%, rgba(0, 10, 20, 0.6) 100%),
-          linear-gradient(180deg, rgba(0, 255, 255, 0.02) 0%, transparent 10%, transparent 90%, rgba(255, 0, 255, 0.02) 100%)
+          radial-gradient(ellipse at center, transparent 50%, rgba(10, 14, 20, 0.5) 100%),
+          linear-gradient(180deg, rgba(59, 130, 246, 0.02) 0%, transparent 10%, transparent 90%, rgba(30, 41, 59, 0.05) 100%)
         `,
         zIndex: 100
       }} />
       
-      {/* Scan Line Effect */}
+      {/* Scan Line Effect - Subtle */}
       <div style={{
         position: 'absolute',
-        top: 60,
+        top: 56,
         left: 0,
         right: 0,
         bottom: 0,
@@ -605,22 +605,22 @@ export default function YardMap() {
           position: 'absolute',
           left: 0,
           right: 0,
-          height: '2px',
-          background: 'linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.5), transparent)',
-          animation: 'scan-line 4s linear infinite',
-          boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)'
+          height: '1px',
+          background: 'linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent)',
+          animation: 'scan-line 5s linear infinite',
+          boxShadow: '0 0 15px rgba(59, 130, 246, 0.2)'
         }} />
       </div>
       
-      {/* Network Stats Ticker */}
+      {/* Network Stats Ticker - Industrial Design */}
       <div style={{
         position: 'absolute',
-        top: 60,
+        top: 56,
         left: 0,
         right: 0,
-        height: '32px',
-        background: 'linear-gradient(90deg, rgba(0, 10, 20, 0.95), rgba(10, 5, 25, 0.95))',
-        borderBottom: '1px solid rgba(0, 255, 255, 0.2)',
+        height: '30px',
+        background: 'linear-gradient(90deg, rgba(10, 14, 20, 0.98), rgba(15, 20, 25, 0.98))',
+        borderBottom: '1px solid rgba(59, 130, 246, 0.15)',
         display: 'flex',
         alignItems: 'center',
         overflow: 'hidden',
@@ -628,22 +628,23 @@ export default function YardMap() {
       }}>
         <div style={{
           display: 'flex',
-          animation: 'ticker 30s linear infinite',
+          animation: 'ticker 35s linear infinite',
           whiteSpace: 'nowrap',
-          fontFamily: '"JetBrains Mono", monospace',
-          fontSize: '0.7rem'
+          fontFamily: '"Inter", -apple-system, sans-serif',
+          fontSize: '0.65rem',
+          fontWeight: '500'
         }}>
           {[1, 2].map((_, idx) => (
             <div key={idx} style={{ display: 'flex', gap: '40px', paddingRight: '40px' }}>
-              <span style={{ color: '#00ffff' }}>📊 NETWORK STATS</span>
-              <span style={{ color: '#888' }}>Facilities Online: <span style={{ color: '#00ff00' }}>847</span></span>
-              <span style={{ color: '#888' }}>Active Trailers: <span style={{ color: '#00ffff' }}>12,459</span></span>
-              <span style={{ color: '#888' }}>Avg Turn Time: <span style={{ color: '#ffff00' }}>26.4 min</span></span>
-              <span style={{ color: '#888' }}>Trucks in Transit: <span style={{ color: '#ff00ff' }}>3,291</span></span>
-              <span style={{ color: '#888' }}>Network YVS: <span style={{ color: '#00ff00' }}>78.2</span></span>
-              <span style={{ color: '#888' }}>Daily Moves: <span style={{ color: '#00ffff' }}>45,892</span></span>
-              <span style={{ color: '#888' }}>Ghost Assets: <span style={{ color: '#ff6600' }}>142</span></span>
-              <span style={{ color: '#00ff00' }}>▲ +2.1% WoW</span>
+              <span style={{ color: '#3B82F6' }}>◈ ORCHESTRATION STATUS</span>
+              <span style={{ color: '#64748B' }}>Facilities Online: <span style={{ color: '#10B981' }}>847</span></span>
+              <span style={{ color: '#64748B' }}>Active Trailers: <span style={{ color: '#3B82F6' }}>12,459</span></span>
+              <span style={{ color: '#64748B' }}>Avg Turn Time: <span style={{ color: '#F59E0B' }}>26.4 min</span></span>
+              <span style={{ color: '#64748B' }}>Autonomous Handoffs: <span style={{ color: '#60A5FA' }}>3,291</span></span>
+              <span style={{ color: '#64748B' }}>Network YVS: <span style={{ color: '#10B981' }}>78.2</span></span>
+              <span style={{ color: '#64748B' }}>Daily Moves: <span style={{ color: '#3B82F6' }}>45,892</span></span>
+              <span style={{ color: '#64748B' }}>Untracked: <span style={{ color: '#F97316' }}>142</span></span>
+              <span style={{ color: '#10B981' }}>▲ +2.1% WoW</span>
             </div>
           ))}
         </div>
@@ -652,19 +653,19 @@ export default function YardMap() {
       {/* 3D Overlay Canvas */}
       <div style={{ 
         position: 'absolute', 
-        top: 92, 
+        top: 86, 
         left: 0, 
         width: '100%', 
-        height: 'calc(100% - 92px)', 
+        height: 'calc(100% - 86px)', 
         pointerEvents: 'none' 
       }}>
         <Canvas camera={{ position: [0, 8, 10], fov: 50 }}>
-            <ambientLight intensity={0.3} />
-            <pointLight position={[10, 10, 10]} intensity={1.5} color="#00ffff" />
-            <pointLight position={[-10, 10, -10]} intensity={0.5} color="#ff00ff" />
-            <pointLight position={[0, 5, -8]} intensity={1} color="#00ff00" />
-            <directionalLight position={[-5, 5, 5]} intensity={0.8} />
-            <fog attach="fog" args={['#0a0a0f', 15, 35]} />
+            <ambientLight intensity={0.4} />
+            <pointLight position={[10, 10, 10]} intensity={1.2} color="#3B82F6" />
+            <pointLight position={[-10, 10, -10]} intensity={0.4} color="#60A5FA" />
+            <pointLight position={[0, 5, -8]} intensity={0.8} color="#10B981" />
+            <directionalLight position={[-5, 5, 5]} intensity={0.9} />
+            <fog attach="fog" args={['#0A0E14', 18, 40]} />
             
             {/* Animated Camera */}
             <CameraRig />
@@ -699,96 +700,99 @@ export default function YardMap() {
         </Canvas>
       </div>
       
-      {/* Quick Action Buttons */}
+      {/* Quick Action Buttons - Industrial Style */}
       <div style={{
         position: 'absolute',
-        top: 110,
+        top: 102,
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
-        gap: '10px',
+        gap: '8px',
         zIndex: 1000
       }}>
         <button
           onClick={() => setShowROI(true)}
           style={{
-            background: 'linear-gradient(135deg, rgba(0, 255, 0, 0.2) 0%, rgba(0, 200, 0, 0.1) 100%)',
-            border: '1px solid rgba(0, 255, 0, 0.4)',
-            color: '#00ff00',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            color: '#10B981',
             padding: '8px 16px',
             borderRadius: '6px',
             cursor: 'pointer',
-            fontFamily: '"JetBrains Mono", monospace',
+            fontFamily: '"Inter", -apple-system, sans-serif',
             fontSize: '0.7rem',
-            letterSpacing: '1px',
-            transition: 'all 0.3s ease'
+            fontWeight: '600',
+            letterSpacing: '0.5px',
+            transition: 'all 0.2s ease'
           }}
         >
-          💰 ROI Calculator
+          ◈ ROI Calculator
         </button>
         <button
           onClick={() => setShowNetwork(true)}
           style={{
-            background: 'linear-gradient(135deg, rgba(0, 255, 255, 0.2) 0%, rgba(0, 200, 200, 0.1) 100%)',
-            border: '1px solid rgba(0, 255, 255, 0.4)',
-            color: '#00ffff',
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
+            color: '#3B82F6',
             padding: '8px 16px',
             borderRadius: '6px',
             cursor: 'pointer',
-            fontFamily: '"JetBrains Mono", monospace',
+            fontFamily: '"Inter", -apple-system, sans-serif',
             fontSize: '0.7rem',
-            letterSpacing: '1px',
-            transition: 'all 0.3s ease'
+            fontWeight: '600',
+            letterSpacing: '0.5px',
+            transition: 'all 0.2s ease'
           }}
         >
-          🌐 Primo Network
+          ⬡ Primo Network
         </button>
         <button
           onClick={() => setShowAdoptionLeaderboard(true)}
           style={{
-            background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.1) 100%)',
-            border: '1px solid rgba(255, 215, 0, 0.4)',
-            color: '#ffd700',
+            background: 'rgba(245, 158, 11, 0.1)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
+            color: '#F59E0B',
             padding: '8px 16px',
             borderRadius: '6px',
             cursor: 'pointer',
-            fontFamily: '"JetBrains Mono", monospace',
+            fontFamily: '"Inter", -apple-system, sans-serif',
             fontSize: '0.7rem',
-            letterSpacing: '1px',
-            transition: 'all 0.3s ease'
+            fontWeight: '600',
+            letterSpacing: '0.5px',
+            transition: 'all 0.2s ease'
           }}
         >
-          🏆 Leaderboard
+          ◆ Leaderboard
         </button>
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
           style={{
-            background: soundEnabled ? 'rgba(0, 255, 255, 0.1)' : 'rgba(255, 0, 0, 0.1)',
-            border: `1px solid ${soundEnabled ? 'rgba(0, 255, 255, 0.4)' : 'rgba(255, 0, 0, 0.4)'}`,
-            color: soundEnabled ? '#00ffff' : '#ff4444',
+            background: soundEnabled ? 'rgba(59, 130, 246, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+            border: `1px solid ${soundEnabled ? 'rgba(59, 130, 246, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+            color: soundEnabled ? '#3B82F6' : '#EF4444',
             padding: '8px 12px',
             borderRadius: '6px',
             cursor: 'pointer',
-            fontFamily: '"JetBrains Mono", monospace',
-            fontSize: '0.9rem'
+            fontFamily: '"Inter", -apple-system, sans-serif',
+            fontSize: '0.85rem'
           }}
         >
-          {soundEnabled ? '🔊' : '🔇'}
+          {soundEnabled ? '◉' : '○'}
         </button>
       </div>
       
-      {/* Mini Radar */}
+      {/* Mini Radar - Industrial Design */}
       <div style={{
         position: 'absolute',
-        top: 160,
+        top: 150,
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '80px',
-        height: '80px',
+        width: '72px',
+        height: '72px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(0, 20, 30, 0.9) 0%, rgba(0, 10, 20, 0.95) 100%)',
-        border: '2px solid rgba(0, 255, 255, 0.4)',
-        boxShadow: '0 0 20px rgba(0, 255, 255, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.5)',
+        background: 'radial-gradient(circle, rgba(15, 20, 25, 0.95) 0%, rgba(10, 14, 20, 0.98) 100%)',
+        border: '1px solid rgba(59, 130, 246, 0.3)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(0, 0, 0, 0.3)',
         zIndex: 1000,
         overflow: 'hidden'
       }}>
@@ -797,20 +801,20 @@ export default function YardMap() {
           position: 'absolute',
           top: '50%',
           left: '50%',
-          width: '60px',
-          height: '60px',
+          width: '50px',
+          height: '50px',
           transform: 'translate(-50%, -50%)',
-          border: '1px solid rgba(0, 255, 255, 0.2)',
+          border: '1px solid rgba(59, 130, 246, 0.15)',
           borderRadius: '50%'
         }} />
         <div style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
-          width: '30px',
-          height: '30px',
+          width: '26px',
+          height: '26px',
           transform: 'translate(-50%, -50%)',
-          border: '1px solid rgba(0, 255, 255, 0.15)',
+          border: '1px solid rgba(59, 130, 246, 0.1)',
           borderRadius: '50%'
         }} />
         {/* Crosshairs */}
@@ -820,7 +824,7 @@ export default function YardMap() {
           left: 0,
           right: 0,
           height: '1px',
-          background: 'rgba(0, 255, 255, 0.2)'
+          background: 'rgba(59, 130, 246, 0.15)'
         }} />
         <div style={{
           position: 'absolute',
@@ -828,18 +832,18 @@ export default function YardMap() {
           top: 0,
           bottom: 0,
           width: '1px',
-          background: 'rgba(0, 255, 255, 0.2)'
+          background: 'rgba(59, 130, 246, 0.15)'
         }} />
         {/* Sweep Line */}
         <div style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
-          width: '40px',
-          height: '2px',
-          background: 'linear-gradient(90deg, rgba(0, 255, 255, 0.8), transparent)',
+          width: '35px',
+          height: '1px',
+          background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.6), transparent)',
           transformOrigin: 'left center',
-          animation: 'radar-sweep 3s linear infinite'
+          animation: 'radar-sweep 4s linear infinite'
         }} />
         {/* Blips */}
         <div style={{
@@ -848,9 +852,9 @@ export default function YardMap() {
           left: '60%',
           width: '4px',
           height: '4px',
-          background: '#00ff00',
+          background: '#10B981',
           borderRadius: '50%',
-          boxShadow: '0 0 6px #00ff00',
+          boxShadow: '0 0 6px #10B981',
           animation: 'pulse 1s infinite'
         }} />
         <div style={{
@@ -859,9 +863,9 @@ export default function YardMap() {
           left: '25%',
           width: '4px',
           height: '4px',
-          background: '#00ff00',
+          background: '#10B981',
           borderRadius: '50%',
-          boxShadow: '0 0 6px #00ff00',
+          boxShadow: '0 0 6px #10B981',
           animation: 'pulse 1.5s infinite'
         }} />
         <div style={{
@@ -870,9 +874,9 @@ export default function YardMap() {
           left: '65%',
           width: '3px',
           height: '3px',
-          background: '#ffff00',
+          background: '#F59E0B',
           borderRadius: '50%',
-          boxShadow: '0 0 6px #ffff00',
+          boxShadow: '0 0 6px #F59E0B',
           animation: 'pulse 2s infinite'
         }} />
       </div>
@@ -881,37 +885,37 @@ export default function YardMap() {
       <AssetPalette />
       <Leaderboard />
       
-      {/* BOL Trigger Button - Redesigned */}
+      {/* BOL Trigger Button - Industrial Design */}
       <button 
         onClick={() => setShowBOL(true)}
         style={{
           position: 'absolute',
-          top: 200,
+          top: 238,
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'linear-gradient(135deg, #00ff00 0%, #00cc00 100%)',
-          color: '#000',
+          background: '#10B981',
+          color: '#0A0E14',
           border: 'none',
-          padding: '12px 24px',
-          fontWeight: 'bold',
+          padding: '10px 20px',
+          fontWeight: '600',
           borderRadius: '6px',
           cursor: 'pointer',
-          fontFamily: '"JetBrains Mono", monospace',
-          fontSize: '0.85rem',
-          letterSpacing: '1px',
-          boxShadow: '0 0 20px rgba(0, 255, 0, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3)',
+          fontFamily: '"Inter", -apple-system, sans-serif',
+          fontSize: '0.8rem',
+          letterSpacing: '0.5px',
+          boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2)',
           zIndex: 1000,
-          transition: 'all 0.3s ease',
-          animation: 'float-centered 3s ease-in-out infinite'
+          transition: 'all 0.2s ease',
+          animation: 'float-centered 4s ease-in-out infinite'
         }}
         onMouseOver={(e) => {
-          e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 255, 0, 0.6), 0 6px 20px rgba(0, 0, 0, 0.4)';
+          e.currentTarget.style.boxShadow = '0 6px 25px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)';
         }}
         onMouseOut={(e) => {
-          e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.4), 0 4px 15px rgba(0, 0, 0, 0.3)';
+          e.currentTarget.style.boxShadow = '0 4px 20px rgba(16, 185, 129, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2)';
         }}
       >
-        🚛 NEW ARRIVAL - DIGITAL BOL
+        ⇄ NEW HANDOFF - DIGITAL BOL
       </button>
 
       {showBOL && <DigitalBOL onClose={() => setShowBOL(false)} />}
@@ -919,21 +923,21 @@ export default function YardMap() {
       {/* Team Invitation Easter Egg */}
       {showInvitation && <TeamInvitation onClose={() => setShowInvitation(false)} />}
       
-      {/* Enhanced Score Display Panel */}
+      {/* Enhanced Score Display Panel - Industrial Style */}
       <div style={{ 
         position: 'absolute', 
         bottom: 20, 
         left: 20, 
-        color: 'white', 
-        fontFamily: '"JetBrains Mono", "Courier New", monospace', 
-        background: 'linear-gradient(135deg, rgba(0, 10, 20, 0.95) 0%, rgba(10, 5, 25, 0.95) 100%)', 
+        color: '#E2E8F0', 
+        fontFamily: '"Inter", -apple-system, sans-serif', 
+        background: 'rgba(15, 20, 25, 0.95)', 
         padding: '20px',
-        border: '1px solid rgba(0, 255, 255, 0.4)',
-        borderRadius: '8px',
-        boxShadow: '0 0 30px rgba(0, 255, 255, 0.2), inset 0 0 60px rgba(0, 0, 0, 0.3)',
-        minWidth: '300px',
-        backdropFilter: 'blur(10px)',
-        animation: 'slideInLeft 0.5s ease-out',
+        border: '1px solid rgba(59, 130, 246, 0.2)',
+        borderRadius: '10px',
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4)',
+        minWidth: '280px',
+        backdropFilter: 'blur(12px)',
+        animation: 'slideInLeft 0.3s ease-out',
         zIndex: 1000
       }}>
         {/* Header */}
@@ -943,52 +947,54 @@ export default function YardMap() {
           alignItems: 'center',
           marginBottom: '15px',
           paddingBottom: '12px',
-          borderBottom: '1px solid rgba(0, 255, 255, 0.2)'
+          borderBottom: '1px solid rgba(59, 130, 246, 0.15)'
         }}>
           <span style={{ 
-            color: '#00ffff', 
-            fontSize: '0.75rem', 
+            color: '#94A3B8', 
+            fontSize: '0.7rem', 
             textTransform: 'uppercase',
-            letterSpacing: '2px'
+            letterSpacing: '1.5px',
+            fontWeight: '600'
           }}>
             Facility Analysis
           </span>
           <span style={{ 
-            fontSize: '0.7rem', 
-            color: scoreData.score >= 80 ? '#00ff00' : scoreData.score >= 50 ? '#ffff00' : '#ff0000',
-            background: 'rgba(0,0,0,0.5)',
+            fontSize: '0.65rem', 
+            fontWeight: '600',
+            color: scoreData.score >= 80 ? '#10B981' : scoreData.score >= 50 ? '#F59E0B' : '#EF4444',
+            background: `${scoreData.score >= 80 ? 'rgba(16, 185, 129, 0.1)' : scoreData.score >= 50 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)'}`,
             padding: '4px 10px',
-            borderRadius: '12px',
-            border: `1px solid ${scoreData.score >= 80 ? 'rgba(0,255,0,0.3)' : scoreData.score >= 50 ? 'rgba(255,255,0,0.3)' : 'rgba(255,0,0,0.3)'}`
+            borderRadius: '4px',
+            border: `1px solid ${scoreData.score >= 80 ? 'rgba(16, 185, 129, 0.25)' : scoreData.score >= 50 ? 'rgba(245, 158, 11, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`
           }}>
-            {scoreData.score >= 80 ? '🐋 WHALE' : scoreData.score >= 50 ? '🎯 STANDARD' : '📉 LOW'}
+            {scoreData.score >= 80 ? '◆ HIGH VALUE' : scoreData.score >= 50 ? '◈ STANDARD' : '○ LOW'}
           </span>
         </div>
         
         {/* Score Display */}
         {isLoading ? (
           <div style={{ 
-            fontSize: '1.5rem', 
-            color: '#00ffff',
+            fontSize: '1.4rem', 
+            color: '#3B82F6',
+            fontWeight: '600',
             animation: 'pulse 1s infinite'
           }}>
-            SCANNING...
+            ANALYZING...
           </div>
         ) : (
           <div style={{ 
-            fontSize: '3rem', 
-            fontWeight: 'bold', 
-            color: scoreData.score >= 80 ? '#00ff00' : scoreData.score >= 50 ? '#ffff00' : '#ff0000',
-            textShadow: `0 0 30px ${scoreData.score >= 80 ? '#00ff00' : scoreData.score >= 50 ? '#ffff00' : '#ff0000'}60`,
+            fontSize: '2.8rem', 
+            fontWeight: '700', 
+            color: scoreData.score >= 80 ? '#10B981' : scoreData.score >= 50 ? '#F59E0B' : '#EF4444',
             marginBottom: '5px',
             lineHeight: '1'
           }}>
             {scoreData.score}
-            <span style={{ fontSize: '1rem', color: '#555', marginLeft: '5px' }}>/100</span>
+            <span style={{ fontSize: '1rem', color: '#475569', marginLeft: '5px', fontWeight: '500' }}>/100</span>
           </div>
         )}
         
-        <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '15px' }}>
+        <div style={{ fontSize: '0.75rem', color: '#64748B', marginBottom: '15px', fontWeight: '500' }}>
           {scoreData.classification}
         </div>
         

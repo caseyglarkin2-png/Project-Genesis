@@ -5,19 +5,15 @@ import React, { useState } from 'react';
  * LEADERBOARD COMPONENT - Network Velocity Dashboard
  * =============================================================================
  * 
- * Displays the gamified leaderboard for facility performance across the network.
- * This is the "Network Dominance" tier of the gamification system.
+ * Displays the facility performance leaderboard across the network.
+ * Industrial Fluidity design - operating system aesthetic.
  * 
  * SCORE INTERPRETATION:
- * - 80-100 (GREEN):  🐋 WHALE - Top performer, minimal "Heavy Water" friction
- * - 50-79 (YELLOW):  🎯 STANDARD - Good performance, room for optimization
- * - 0-49 (RED):      📉 LOW - Underperforming, needs attention
+ * - 80-100 (GREEN):  ◆ WHALE - Top performer, minimal friction
+ * - 50-79 (AMBER):   ◇ STANDARD - Good performance, room for optimization
+ * - 0-49 (RED):      ◁ LOW - Underperforming, needs attention
  * 
- * METRICS EXPLAINED:
- * - Yard Velocity Score (YVS): Composite metric of Turn-Time, Staging Accuracy, 
- *   and Asset Visibility. Higher = faster truck throughput.
- * - Trend Arrow: Performance vs. 7-day rolling average
- *   ▲ Improving | ▼ Declining | - Stable
+ * NO FRICTION - Autonomous Orchestration at scale.
  */
 
 type Facility = {
@@ -40,15 +36,15 @@ const MOCK_LEADERBOARD: Facility[] = [
 
 // Score color coding based on classification thresholds
 const getScoreColor = (score: number): string => {
-  if (score >= 80) return '#00ff00'; // Green - WHALE
-  if (score >= 50) return '#ffff00'; // Yellow - STANDARD
-  return '#ff0000'; // Red - LOW
+  if (score >= 80) return '#10B981'; // Green - WHALE
+  if (score >= 50) return '#F59E0B'; // Amber - STANDARD
+  return '#EF4444'; // Red - LOW
 };
 
 const getScoreEmoji = (score: number): string => {
-  if (score >= 80) return '🐋';
-  if (score >= 50) return '🎯';
-  return '📉';
+  if (score >= 80) return '◆';
+  if (score >= 50) return '◇';
+  return '◁';
 };
 
 const getScoreLabel = (score: number): string => {
@@ -66,71 +62,71 @@ export default function Leaderboard() {
   return (
     <div style={{
       position: 'absolute',
-      top: 110,
+      top: 102,
       right: 20,
       width: '360px',
-      background: 'linear-gradient(135deg, rgba(0, 10, 20, 0.95) 0%, rgba(10, 5, 25, 0.95) 100%)',
-      border: '1px solid rgba(0, 255, 255, 0.4)',
-      borderRadius: '8px',
-      color: '#e0e0e0',
-      fontFamily: '"JetBrains Mono", "Courier New", monospace',
-      boxShadow: '0 0 30px rgba(0, 255, 255, 0.2), inset 0 0 60px rgba(0, 0, 0, 0.3)',
-      backdropFilter: 'blur(10px)',
+      background: 'rgba(15, 20, 25, 0.95)',
+      border: '1px solid rgba(59, 130, 246, 0.2)',
+      borderRadius: '10px',
+      color: '#E2E8F0',
+      fontFamily: '"Inter", -apple-system, sans-serif',
+      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4)',
+      backdropFilter: 'blur(12px)',
       zIndex: 1000,
       padding: '0',
-      animation: 'slideInRight 0.5s ease-out'
+      animation: 'slideInRight 0.3s ease-out'
     }}>
       {/* Header */}
       <div style={{
         padding: '12px 15px',
-        borderBottom: '1px solid rgba(0, 255, 255, 0.3)',
-        background: 'linear-gradient(90deg, rgba(0, 255, 255, 0.15) 0%, rgba(255, 0, 255, 0.05) 100%)',
+        borderBottom: '1px solid rgba(59, 130, 246, 0.15)',
+        background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(30, 41, 59, 0.3) 100%)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        borderRadius: '7px 7px 0 0'
+        borderRadius: '9px 9px 0 0'
       }}>
         <h3 style={{ 
           margin: 0, 
-          fontSize: '0.9rem', 
+          fontSize: '0.75rem', 
           textTransform: 'uppercase', 
           letterSpacing: '2px',
-          background: 'linear-gradient(90deg, #00ffff, #00ff00)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          fontWeight: 'bold'
+          color: '#3B82F6',
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
         }}>
-          🏆 Network Velocity
+          <span style={{ fontSize: '1rem' }}>◈</span>
+          Network Velocity
         </h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button 
             onClick={() => setShowLegend(!showLegend)}
             style={{ 
-              background: 'rgba(0, 255, 255, 0.1)', 
-              border: '1px solid rgba(0, 255, 255, 0.4)', 
-              color: '#00ffff', 
+              background: 'rgba(59, 130, 246, 0.1)', 
+              border: '1px solid rgba(59, 130, 246, 0.3)', 
+              color: '#3B82F6', 
               padding: '4px 10px', 
               cursor: 'pointer',
-              fontSize: '0.65rem',
+              fontSize: '0.6rem',
               borderRadius: '4px',
-              transition: 'all 0.3s ease',
+              transition: 'all 0.2s ease',
               textTransform: 'uppercase',
-              letterSpacing: '1px'
+              letterSpacing: '1px',
+              fontWeight: '500'
             }}
-            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)'}
-            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(0, 255, 255, 0.1)'}
           >
             {showLegend ? 'HIDE' : 'INFO'}
           </button>
           <span style={{ 
-            fontSize: '0.7rem', 
-            color: '#00ff00', 
+            fontSize: '0.65rem', 
+            color: '#10B981', 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '4px',
-            textShadow: '0 0 10px #00ff00'
+            gap: '4px'
           }}>
-            <span style={{ animation: 'pulse 1s infinite' }}>●</span> LIVE
+            <span style={{ animation: 'pulse 2s infinite' }}>●</span> LIVE
           </span>
         </div>
       </div>
@@ -139,28 +135,28 @@ export default function Leaderboard() {
       {showLegend && (
         <div style={{
           padding: '10px 12px',
-          borderBottom: '1px solid #333',
-          background: 'rgba(0, 0, 0, 0.5)',
-          fontSize: '0.75rem'
+          borderBottom: '1px solid rgba(148, 163, 184, 0.1)',
+          background: 'rgba(10, 14, 20, 0.6)',
+          fontSize: '0.7rem'
         }}>
-          <div style={{ marginBottom: '8px', color: '#888', fontWeight: 'bold' }}>YARD VELOCITY SCORE (YVS)</div>
+          <div style={{ marginBottom: '8px', color: '#94A3B8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>Yard Velocity Score</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#00ff00', fontWeight: 'bold' }}>80-100</span>
-              <span>🐋 WHALE - Top performer, minimal friction</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#E2E8F0' }}>
+              <span style={{ color: '#10B981', fontWeight: '600' }}>80-100</span>
+              <span>◆ WHALE - Top performer, minimal friction</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#ffff00', fontWeight: 'bold' }}>50-79</span>
-              <span>🎯 STANDARD - Good, room to optimize</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#E2E8F0' }}>
+              <span style={{ color: '#F59E0B', fontWeight: '600' }}>50-79</span>
+              <span>◇ STANDARD - Good, room to optimize</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#ff0000', fontWeight: 'bold' }}>0-49</span>
-              <span>📉 LOW - Needs immediate attention</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#E2E8F0' }}>
+              <span style={{ color: '#EF4444', fontWeight: '600' }}>0-49</span>
+              <span>◁ LOW - Needs immediate attention</span>
             </div>
           </div>
-          <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #333', color: '#666' }}>
+          <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(148, 163, 184, 0.1)', color: '#64748B', fontSize: '0.65rem' }}>
             <div><strong>Turn Time:</strong> Avg minutes per truck (Target: 24)</div>
-            <div><strong>Ghosts:</strong> "Lost" assets needing manual search</div>
+            <div><strong>Ghosts:</strong> Untracked assets needing manual search</div>
           </div>
         </div>
       )}
@@ -177,38 +173,38 @@ export default function Leaderboard() {
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: '8px 6px',
-              borderBottom: index !== sortedData.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none',
-              background: isUser ? 'rgba(0, 255, 0, 0.1)' : 'transparent',
-              borderLeft: isUser ? '3px solid #00ff00' : '3px solid transparent',
-              borderRadius: '2px'
+              borderBottom: index !== sortedData.length - 1 ? '1px solid rgba(148, 163, 184, 0.08)' : 'none',
+              background: isUser ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+              borderLeft: isUser ? '3px solid #3B82F6' : '3px solid transparent',
+              borderRadius: '4px'
             }}>
               {/* Rank & Name */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
                 <span style={{ 
-                  color: index < 3 ? '#ffd700' : '#555', 
-                  fontWeight: 'bold',
+                  color: index < 3 ? '#F59E0B' : '#64748B', 
+                  fontWeight: '600',
                   width: '24px',
-                  fontSize: '0.9rem'
+                  fontSize: '0.85rem'
                 }}>
                   #{index + 1}
                 </span>
                 <div style={{ flex: 1 }}>
                   <div style={{ 
-                    fontWeight: isUser ? 'bold' : 'normal', 
-                    color: isUser ? '#fff' : '#aaa',
-                    fontSize: '0.85rem',
+                    fontWeight: isUser ? '600' : '400', 
+                    color: isUser ? '#E2E8F0' : '#94A3B8',
+                    fontSize: '0.8rem',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px'
                   }}>
                     {facility.name}
-                    <span style={{ fontSize: '0.9rem' }}>{getScoreEmoji(facility.score)}</span>
+                    <span style={{ fontSize: '0.85rem' }}>{getScoreEmoji(facility.score)}</span>
                   </div>
-                  <div style={{ fontSize: '0.65rem', color: '#555', display: 'flex', gap: '8px', marginTop: '2px' }}>
+                  <div style={{ fontSize: '0.65rem', color: '#64748B', display: 'flex', gap: '8px', marginTop: '2px' }}>
                     <span>{facility.tier}</span>
-                    {facility.turnTime && <span>⏱ {facility.turnTime}m</span>}
+                    {facility.turnTime && <span>◷ {facility.turnTime}m</span>}
                     {facility.ghostCount !== undefined && facility.ghostCount > 0 && (
-                      <span style={{ color: '#ff6600' }}>👻 {facility.ghostCount}</span>
+                      <span style={{ color: '#F59E0B' }}>◌ {facility.ghostCount}</span>
                     )}
                   </div>
                 </div>
@@ -217,18 +213,17 @@ export default function Leaderboard() {
               {/* Score & Trend */}
               <div style={{ textAlign: 'right', minWidth: '50px' }}>
                 <div style={{ 
-                  fontSize: '1.1rem', 
-                  fontWeight: 'bold', 
-                  color: scoreColor,
-                  textShadow: `0 0 8px ${scoreColor}40`
+                  fontSize: '1.05rem', 
+                  fontWeight: '600', 
+                  color: scoreColor
                 }}>
                   {facility.score.toFixed(1)}
                 </div>
                 <div style={{ 
-                  fontSize: '0.7rem', 
-                  color: facility.trend === 'up' ? '#00ff00' : facility.trend === 'down' ? '#ff0000' : '#888' 
+                  fontSize: '0.65rem', 
+                  color: facility.trend === 'up' ? '#10B981' : facility.trend === 'down' ? '#EF4444' : '#64748B' 
                 }}>
-                  {facility.trend === 'up' ? '▲ +2.1' : facility.trend === 'down' ? '▼ -1.8' : '- 0.0'}
+                  {facility.trend === 'up' ? '▲ +2.1' : facility.trend === 'down' ? '▼ -1.8' : '— 0.0'}
                 </div>
               </div>
             </li>
@@ -240,15 +235,15 @@ export default function Leaderboard() {
       <div style={{ 
         padding: '10px 12px', 
         textAlign: 'center', 
-        fontSize: '0.75rem', 
-        borderTop: '1px solid rgba(255,255,255,0.1)',
-        background: 'rgba(0, 0, 0, 0.3)'
+        fontSize: '0.7rem', 
+        borderTop: '1px solid rgba(148, 163, 184, 0.1)',
+        background: 'rgba(10, 14, 20, 0.4)'
       }}>
-        <div style={{ color: '#00ffff', fontWeight: 'bold', marginBottom: '4px' }}>NETWORK TARGET</div>
-        <div style={{ color: '#888' }}>
-          Turn Time: <span style={{ color: '#00ff00' }}>24 MIN</span> | 
-          Ghost Count: <span style={{ color: '#00ff00' }}>0</span> | 
-          YVS: <span style={{ color: '#00ff00' }}>80+</span>
+        <div style={{ color: '#3B82F6', fontWeight: '600', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Network Target</div>
+        <div style={{ color: '#94A3B8' }}>
+          Turn Time: <span style={{ color: '#10B981' }}>24 MIN</span> | 
+          Ghost Count: <span style={{ color: '#10B981' }}>0</span> | 
+          YVS: <span style={{ color: '#10B981' }}>80+</span>
         </div>
       </div>
     </div>

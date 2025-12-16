@@ -412,19 +412,19 @@ export const NETWORK_FACILITIES: Facility[] = [
   generateFacility('WY-CHE-001', 'Cheyenne Depot', 'Cheyenne, WY', 41.14, -104.82, 'small'),
 ];
 
-// Utility functions
+// Utility functions - Industrial Fluidity color palette
 export const getScoreColor = (score: number): string => {
-  if (score >= 80) return '#00ff00';
-  if (score >= 50) return '#ffff00';
-  return '#ff0000';
+  if (score >= 80) return '#10B981'; // Green
+  if (score >= 50) return '#F59E0B'; // Amber
+  return '#EF4444'; // Red
 };
 
 export const getStatusColor = (status: string): string => {
   switch (status) {
-    case 'online': return '#00ff00';
-    case 'warning': return '#ff6600';
-    case 'offline': return '#ff0000';
-    default: return '#888';
+    case 'online': return '#10B981'; // Green
+    case 'warning': return '#F59E0B'; // Amber
+    case 'offline': return '#EF4444'; // Red
+    default: return '#64748B'; // Steel
   }
 };
 

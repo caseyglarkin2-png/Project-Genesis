@@ -2,12 +2,40 @@ import React, { useState, useEffect } from 'react';
 
 /**
  * =============================================================================
- * COMMAND HEADER - Tactical Operations Center Header
+ * COMMAND HEADER - FreightRoll Orchestration Command Center
  * =============================================================================
  * 
- * The cinematic header that makes this feel like a military-grade operations
- * center. Shows system status, live clock, and connection info.
+ * Industrial Fluidity design - feels like an operating system, not a website.
+ * Dark, high-contrast interfaces for the command center.
  */
+
+// FreightRoll Node Logo SVG Component
+const NodeLogo = () => (
+  <svg width="36" height="36" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Hexagon outline */}
+    <path 
+      d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" 
+      stroke="#3B82F6" 
+      strokeWidth="2" 
+      fill="none"
+      opacity="0.8"
+    />
+    {/* Inner hexagon */}
+    <path 
+      d="M50 20 L75 35 L75 65 L50 80 L25 65 L25 35 Z" 
+      stroke="#64748B" 
+      strokeWidth="1.5" 
+      fill="rgba(59, 130, 246, 0.1)"
+    />
+    {/* Center circle - The Node */}
+    <circle cx="50" cy="50" r="8" fill="#3B82F6" />
+    <circle cx="50" cy="50" r="14" stroke="#3B82F6" strokeWidth="1" fill="none" opacity="0.5" />
+    {/* Connection lines from center */}
+    <line x1="50" y1="50" x2="50" y2="20" stroke="#3B82F6" strokeWidth="1.5" opacity="0.6" />
+    <line x1="50" y1="50" x2="75" y2="35" stroke="#3B82F6" strokeWidth="1.5" opacity="0.6" />
+    <line x1="50" y1="50" x2="25" y2="35" stroke="#3B82F6" strokeWidth="1.5" opacity="0.6" />
+  </svg>
+);
 
 export default function CommandHeader() {
   const [time, setTime] = useState(new Date());
@@ -24,55 +52,49 @@ export default function CommandHeader() {
       top: 0,
       left: 0,
       right: 0,
-      height: '60px',
-      background: 'linear-gradient(180deg, rgba(0, 10, 20, 0.98) 0%, rgba(0, 10, 20, 0.85) 100%)',
-      borderBottom: '1px solid rgba(0, 255, 255, 0.3)',
+      height: '56px',
+      background: 'linear-gradient(180deg, rgba(10, 14, 20, 0.98) 0%, rgba(15, 20, 25, 0.95) 100%)',
+      borderBottom: '1px solid rgba(59, 130, 246, 0.2)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '0 20px',
+      padding: '0 24px',
       zIndex: 2000,
-      fontFamily: '"JetBrains Mono", "Courier New", monospace',
-      backdropFilter: 'blur(10px)',
-      boxShadow: '0 4px 30px rgba(0, 255, 255, 0.1)',
-      animation: 'fadeIn 0.5s ease-out'
+      fontFamily: '"Inter", "SF Pro Display", -apple-system, sans-serif',
+      backdropFilter: 'blur(12px)',
+      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4)',
+      animation: 'fadeIn 0.3s ease-out'
     }}>
       {/* Left: Logo & Title */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        {/* Animated Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* The Node Logo */}
         <div style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '8px',
-          background: 'linear-gradient(135deg, #00ffff 0%, #00ff00 50%, #ff00ff 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '1.5rem',
-          animation: 'float 3s ease-in-out infinite',
-          boxShadow: '0 0 20px rgba(0, 255, 255, 0.5)'
+          animation: 'float 4s ease-in-out infinite'
         }}>
-          🚀
+          <NodeLogo />
         </div>
         
         <div>
           <div style={{
             fontSize: '1.1rem',
-            fontWeight: 'bold',
-            background: 'linear-gradient(90deg, #00ffff, #00ff00)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '2px'
+            fontWeight: '700',
+            color: '#F1F5F9',
+            letterSpacing: '3px',
+            fontFamily: '"Inter", sans-serif'
           }}>
-            PROJECT GENESIS
+            FREIGHTROLL
           </div>
           <div style={{
-            fontSize: '0.65rem',
-            color: '#666',
-            letterSpacing: '3px',
-            textTransform: 'uppercase'
+            fontSize: '0.6rem',
+            color: '#64748B',
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+            fontWeight: '500'
           }}>
-            YARD ORCHESTRATION COMMAND
+            FACILITY ORCHESTRATION
           </div>
         </div>
       </div>
@@ -80,13 +102,13 @@ export default function CommandHeader() {
       {/* Center: Status Indicators */}
       <div style={{ 
         display: 'flex', 
-        gap: '25px',
+        gap: '24px',
         fontSize: '0.75rem'
       }}>
         <StatusIndicator 
-          label="BACKEND" 
+          label="ORCHESTRATOR" 
           status="online" 
-          detail="Render" 
+          detail="Active" 
         />
         <StatusIndicator 
           label="VISION AI" 
@@ -94,13 +116,13 @@ export default function CommandHeader() {
           detail="YOLOv8" 
         />
         <StatusIndicator 
-          label="SATELLITE" 
+          label="GROUND TRUTH" 
           status="live" 
-          detail="Mapbox" 
+          detail="Synced" 
         />
       </div>
 
-      {/* Right: Clock & User */}
+      {/* Right: Clock & Mode */}
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 
@@ -110,14 +132,15 @@ export default function CommandHeader() {
         {/* Live Clock */}
         <div style={{ textAlign: 'right' }}>
           <div style={{ 
-            color: '#00ffff', 
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            letterSpacing: '1px'
+            color: '#F1F5F9', 
+            fontSize: '0.95rem',
+            fontWeight: '600',
+            letterSpacing: '1px',
+            fontFamily: '"SF Mono", "JetBrains Mono", monospace'
           }}>
             {time.toLocaleTimeString('en-US', { hour12: false })}
           </div>
-          <div style={{ color: '#555', fontSize: '0.65rem' }}>
+          <div style={{ color: '#475569', fontSize: '0.6rem', fontWeight: '500' }}>
             {time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
           </div>
         </div>
@@ -125,27 +148,34 @@ export default function CommandHeader() {
         {/* Divider */}
         <div style={{ 
           width: '1px', 
-          height: '30px', 
-          background: 'linear-gradient(180deg, transparent, #00ffff, transparent)' 
+          height: '28px', 
+          background: 'linear-gradient(180deg, transparent, #3B82F6, transparent)',
+          opacity: 0.4
         }} />
 
-        {/* Team Badge */}
+        {/* Mode Badge */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          padding: '6px 12px',
-          background: 'rgba(255, 0, 255, 0.1)',
-          border: '1px solid rgba(255, 0, 255, 0.3)',
-          borderRadius: '20px'
+          padding: '6px 14px',
+          background: 'rgba(59, 130, 246, 0.1)',
+          border: '1px solid rgba(59, 130, 246, 0.25)',
+          borderRadius: '6px'
         }}>
-          <span style={{ fontSize: '1rem' }}>🐟</span>
+          <div style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            background: '#10B981',
+            boxShadow: '0 0 8px rgba(16, 185, 129, 0.5)'
+          }} />
           <div>
-            <div style={{ color: '#ff00ff', fontWeight: 'bold', fontSize: '0.7rem' }}>
-              TEAM FISHASSASSIN
+            <div style={{ color: '#F1F5F9', fontWeight: '600', fontSize: '0.7rem', letterSpacing: '1px' }}>
+              COMMAND MODE
             </div>
-            <div style={{ color: '#666', fontSize: '0.6rem' }}>
-              HACKATHON 2025
+            <div style={{ color: '#64748B', fontSize: '0.55rem', letterSpacing: '0.5px' }}>
+              NO FRICTION
             </div>
           </div>
         </div>
@@ -154,7 +184,7 @@ export default function CommandHeader() {
   );
 }
 
-// Status Indicator Component
+// Status Indicator Component - Industrial Style
 function StatusIndicator({ 
   label, 
   status, 
@@ -165,10 +195,10 @@ function StatusIndicator({
   detail: string;
 }) {
   const colors = {
-    online: '#00ff00',
-    ready: '#00ffff',
-    live: '#ff00ff',
-    offline: '#ff0000'
+    online: '#10B981',
+    ready: '#3B82F6',
+    live: '#60A5FA',
+    offline: '#EF4444'
   };
   
   const color = colors[status];
@@ -176,18 +206,18 @@ function StatusIndicator({
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <div style={{
-        width: '8px',
-        height: '8px',
+        width: '6px',
+        height: '6px',
         borderRadius: '50%',
         background: color,
-        boxShadow: `0 0 10px ${color}`,
+        boxShadow: `0 0 8px ${color}`,
         animation: 'pulse 2s infinite'
       }} />
       <div>
-        <div style={{ color: '#888', fontSize: '0.6rem', letterSpacing: '1px' }}>
+        <div style={{ color: '#64748B', fontSize: '0.55rem', letterSpacing: '1px', fontWeight: '500' }}>
           {label}
         </div>
-        <div style={{ color: color, fontWeight: 'bold' }}>
+        <div style={{ color: '#E2E8F0', fontWeight: '600', fontSize: '0.7rem' }}>
           {status.toUpperCase()}
         </div>
       </div>

@@ -1,6 +1,6 @@
 /* ============================================================================
-   PROJECT GENESIS - INDUSTRIAL SCI-FI DARK MODE
-   "SimCity for Logistics" - Cyberpunk Aesthetic
+   FREIGHTROLL - INDUSTRIAL FLUIDITY DESIGN SYSTEM
+   "Autonomous Orchestration" - Operating System Aesthetic
    ============================================================================ */
 
 * {
@@ -10,29 +10,33 @@
 }
 
 :root {
-  /* Neon Color Palette */
-  --neon-cyan: #00ffff;
-  --neon-green: #00ff00;
-  --neon-magenta: #ff00ff;
-  --neon-yellow: #ffff00;
-  --neon-orange: #ff6600;
-  --neon-red: #ff0044;
+  /* FreightRoll Color Palette - Industrial Fluidity */
+  --fr-blue: #3B82F6;
+  --fr-blue-bright: #60A5FA;
+  --fr-blue-dim: #1D4ED8;
+  --fr-silver: #94A3B8;
+  --fr-steel: #64748B;
+  --fr-white: #F1F5F9;
+  --fr-success: #10B981;
+  --fr-warning: #F59E0B;
+  --fr-error: #EF4444;
   
-  /* Dark Backgrounds */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #0d1117;
-  --bg-panel: rgba(0, 10, 20, 0.95);
-  --bg-hover: rgba(0, 255, 255, 0.1);
+  /* Dark Backgrounds - Command Center */
+  --bg-primary: #0A0E14;
+  --bg-secondary: #0F1419;
+  --bg-panel: rgba(15, 20, 25, 0.95);
+  --bg-elevated: rgba(30, 41, 59, 0.5);
+  --bg-hover: rgba(59, 130, 246, 0.1);
   
-  /* Text */
-  --text-primary: #e0e0e0;
-  --text-secondary: #888888;
-  --text-muted: #555555;
+  /* Text Hierarchy */
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-muted: #475569;
   
-  /* Glow Effects */
-  --glow-cyan: 0 0 20px rgba(0, 255, 255, 0.4);
-  --glow-green: 0 0 20px rgba(0, 255, 0, 0.4);
-  --glow-magenta: 0 0 20px rgba(255, 0, 255, 0.4);
+  /* Subtle Glow Effects */
+  --glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
+  --glow-success: 0 0 15px rgba(16, 185, 129, 0.3);
+  --glow-white: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
 html,
@@ -44,29 +48,29 @@ body {
 }
 
 body {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: 
-    radial-gradient(ellipse at top, rgba(0, 255, 255, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at bottom, rgba(255, 0, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at top, rgba(59, 130, 246, 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(30, 41, 59, 0.5) 0%, transparent 50%),
     var(--bg-primary);
 }
 
 a {
-  color: var(--neon-cyan);
+  color: var(--fr-blue);
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 a:hover {
-  text-shadow: var(--glow-cyan);
+  color: var(--fr-blue-bright);
 }
 
-/* Scrollbar Styling */
+/* Scrollbar - Minimal Industrial */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -74,31 +78,31 @@ a:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--neon-cyan);
-  border-radius: 4px;
+  background: var(--fr-steel);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--neon-green);
+  background: var(--fr-blue);
 }
 
 /* ============================================================================
-   ANIMATIONS
+   ANIMATIONS - Subtle, Professional Motion
    ============================================================================ */
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.6; }
 }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan); }
-  50% { box-shadow: 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-cyan); }
+  0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
 }
 
 @keyframes border-glow {
-  0%, 100% { border-color: var(--neon-cyan); }
-  50% { border-color: var(--neon-magenta); }
+  0%, 100% { border-color: var(--fr-blue); }
+  50% { border-color: var(--fr-blue-bright); }
 }
 
 @keyframes scan-line {
@@ -106,7 +110,7 @@ a:hover {
   100% { transform: translateY(100vh); }
 }
 
-@keyframes data-stream {
+@keyframes data-flow {
   0% { background-position: 0% 0%; }
   100% { background-position: 0% 100%; }
 }
@@ -133,12 +137,12 @@ a:hover {
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-3px); }
 }
 
 @keyframes float-centered {
   0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(-5px); }
+  50% { transform: translateX(-50%) translateY(-3px); }
 }
 
 @keyframes confetti-fall {
@@ -152,16 +156,14 @@ a:hover {
 }
 
 @keyframes blink {
-  0%, 50% { border-color: var(--neon-green); }
+  0%, 50% { border-color: var(--fr-success); }
   51%, 100% { border-color: transparent; }
 }
 
-@keyframes rainbow-border {
-  0% { border-color: var(--neon-cyan); }
-  25% { border-color: var(--neon-green); }
-  50% { border-color: var(--neon-magenta); }
-  75% { border-color: var(--neon-yellow); }
-  100% { border-color: var(--neon-cyan); }
+@keyframes status-pulse {
+  0% { border-color: var(--fr-blue); }
+  50% { border-color: var(--fr-blue-bright); }
+  100% { border-color: var(--fr-blue); }
 }
 
 @keyframes shimmer {
@@ -180,7 +182,7 @@ a:hover {
 }
 
 /* ============================================================================
-   UTILITY CLASSES
+   UTILITY CLASSES - Industrial Fluidity
    ============================================================================ */
 
 .animate-pulse {
@@ -196,19 +198,19 @@ a:hover {
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .animate-slideInRight {
-  animation: slideInRight 0.5s ease-out;
+  animation: slideInRight 0.3s ease-out;
 }
 
 .animate-slideInLeft {
-  animation: slideInLeft 0.5s ease-out;
+  animation: slideInLeft 0.3s ease-out;
 }
 
 .animate-slideInUp {
-  animation: slideInUp 0.5s ease-out;
+  animation: slideInUp 0.3s ease-out;
 }
 
 /* Scan Line Effect (overlay) */
@@ -218,54 +220,52 @@ a:hover {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
-  animation: scan-line 3s linear infinite;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--fr-blue), transparent);
+  animation: scan-line 4s linear infinite;
   pointer-events: none;
+  opacity: 0.5;
 }
 
-/* Neon Text */
-.neon-text-cyan {
-  color: var(--neon-cyan);
-  text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+/* Industrial Text Styles */
+.text-primary {
+  color: var(--text-primary);
 }
 
-.neon-text-green {
-  color: var(--neon-green);
-  text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+.text-blue {
+  color: var(--fr-blue);
 }
 
-.neon-text-magenta {
-  color: var(--neon-magenta);
-  text-shadow: 0 0 10px var(--neon-magenta), 0 0 20px var(--neon-magenta);
+.text-success {
+  color: var(--fr-success);
 }
 
-/* Glass Panel Effect */
+/* Glass Panel Effect - Operating System Style */
 .glass-panel {
-  background: rgba(0, 10, 20, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 255, 255, 0.3);
+  background: rgba(15, 20, 25, 0.9);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
   border-radius: 8px;
   box-shadow: 
-    0 0 20px rgba(0, 255, 255, 0.1),
-    inset 0 0 60px rgba(0, 0, 0, 0.3);
+    0 4px 30px rgba(0, 0, 0, 0.3),
+    inset 0 0 60px rgba(0, 0, 0, 0.2);
 }
 
-/* Grid Background */
+/* Subtle Grid Background */
 .grid-bg {
   background-image: 
-    linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
+    linear-gradient(rgba(59, 130, 246, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
-/* Data Stream Background */
-.data-stream-bg {
+/* Data Flow Background */
+.data-flow-bg {
   background: 
     linear-gradient(180deg, 
       transparent 0%, 
-      rgba(0, 255, 255, 0.02) 50%, 
+      rgba(59, 130, 246, 0.01) 50%, 
       transparent 100%);
   background-size: 100% 200%;
-  animation: data-stream 2s linear infinite;
+  animation: data-flow 3s linear infinite;
 }
