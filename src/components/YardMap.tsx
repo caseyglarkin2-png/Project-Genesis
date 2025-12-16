@@ -111,6 +111,88 @@ const GridFloor = () => {
   );
 }
 
+// 3D Warehouse Building
+const Warehouse = ({ position = [0, 0, -8] as [number, number, number] }) => {
+  const meshRef = useRef<any>();
+  
+  return (
+    <group position={position}>
+      {/* Main Building */}
+      <mesh position={[0, 2, 0]}>
+        <boxGeometry args={[12, 4, 6]} />
+        <meshStandardMaterial 
+          color="#1a1a2e" 
+          roughness={0.8} 
+          metalness={0.2}
+        />
+      </mesh>
+      {/* Roof */}
+      <mesh position={[0, 4.3, 0]}>
+        <boxGeometry args={[12.5, 0.3, 6.5]} />
+        <meshStandardMaterial color="#0d0d15" roughness={0.5} metalness={0.3} />
+      </mesh>
+      {/* Dock Doors */}
+      {[-4, -1.5, 1, 3.5].map((x, i) => (
+        <group key={i} position={[x, 1.5, 3.05]}>
+          {/* Door Frame */}
+          <mesh>
+            <boxGeometry args={[2, 2.5, 0.1]} />
+            <meshStandardMaterial color="#333" />
+          </mesh>
+          {/* Door Number */}
+          <mesh position={[0, 1.5, 0.1]}>
+            <boxGeometry args={[0.5, 0.3, 0.05]} />
+            <meshStandardMaterial 
+              color="#00ff00" 
+              emissive="#00ff00"
+              emissiveIntensity={0.5}
+            />
+          </mesh>
+          {/* Status Light */}
+          <mesh position={[0.8, 1.5, 0.1]}>
+            <sphereGeometry args={[0.08, 16, 16]} />
+            <meshStandardMaterial 
+              color={i % 2 === 0 ? "#00ff00" : "#ff6600"} 
+              emissive={i % 2 === 0 ? "#00ff00" : "#ff6600"}
+              emissiveIntensity={1}
+            />
+          </mesh>
+        </group>
+      ))}
+      {/* Company Sign */}
+      <mesh position={[0, 3.5, 3.1]}>
+        <boxGeometry args={[4, 0.5, 0.1]} />
+        <meshStandardMaterial 
+          color="#00ffff" 
+          emissive="#00ffff"
+          emissiveIntensity={0.3}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+// Dock Platform
+const DockPlatform = ({ position = [0, 0, -4.5] as [number, number, number] }) => {
+  return (
+    <mesh position={position}>
+      <boxGeometry args={[14, 0.3, 3]} />
+      <meshStandardMaterial color="#2a2a3a" roughness={0.9} />
+    </mesh>
+  );
+}
+
+// Animated Camera Rig
+const CameraRig = () => {
+  useFrame((state) => {
+    const t = state.clock.elapsedTime * 0.1;
+    state.camera.position.x = Math.sin(t) * 2;
+    state.camera.position.z = 8 + Math.cos(t) * 2;
+    state.camera.lookAt(0, 0, 0);
+  });
+  return null;
+}
+
 // Floating Particles Effect
 const FloatingParticles = () => {
   const particlesRef = useRef<any>();
@@ -304,37 +386,186 @@ export default function YardMap() {
         }} />
       </div>
       
+      {/* Network Stats Ticker */}
+      <div style={{
+        position: 'absolute',
+        top: 60,
+        left: 0,
+        right: 0,
+        height: '32px',
+        background: 'linear-gradient(90deg, rgba(0, 10, 20, 0.95), rgba(10, 5, 25, 0.95))',
+        borderBottom: '1px solid rgba(0, 255, 255, 0.2)',
+        display: 'flex',
+        alignItems: 'center',
+        overflow: 'hidden',
+        zIndex: 500
+      }}>
+        <div style={{
+          display: 'flex',
+          animation: 'ticker 30s linear infinite',
+          whiteSpace: 'nowrap',
+          fontFamily: '"JetBrains Mono", monospace',
+          fontSize: '0.7rem'
+        }}>
+          {[1, 2].map((_, idx) => (
+            <div key={idx} style={{ display: 'flex', gap: '40px', paddingRight: '40px' }}>
+              <span style={{ color: '#00ffff' }}>📊 NETWORK STATS</span>
+              <span style={{ color: '#888' }}>Facilities Online: <span style={{ color: '#00ff00' }}>847</span></span>
+              <span style={{ color: '#888' }}>Active Trailers: <span style={{ color: '#00ffff' }}>12,459</span></span>
+              <span style={{ color: '#888' }}>Avg Turn Time: <span style={{ color: '#ffff00' }}>26.4 min</span></span>
+              <span style={{ color: '#888' }}>Trucks in Transit: <span style={{ color: '#ff00ff' }}>3,291</span></span>
+              <span style={{ color: '#888' }}>Network YVS: <span style={{ color: '#00ff00' }}>78.2</span></span>
+              <span style={{ color: '#888' }}>Daily Moves: <span style={{ color: '#00ffff' }}>45,892</span></span>
+              <span style={{ color: '#888' }}>Ghost Assets: <span style={{ color: '#ff6600' }}>142</span></span>
+              <span style={{ color: '#00ff00' }}>▲ +2.1% WoW</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      
       {/* 3D Overlay Canvas */}
       <div style={{ 
         position: 'absolute', 
-        top: 60, 
+        top: 92, 
         left: 0, 
         width: '100%', 
-        height: 'calc(100% - 60px)', 
+        height: 'calc(100% - 92px)', 
         pointerEvents: 'none' 
       }}>
-        <Canvas camera={{ position: [0, 8, 8], fov: 50 }}>
+        <Canvas camera={{ position: [0, 8, 10], fov: 50 }}>
             <ambientLight intensity={0.3} />
             <pointLight position={[10, 10, 10]} intensity={1.5} color="#00ffff" />
             <pointLight position={[-10, 10, -10]} intensity={0.5} color="#ff00ff" />
+            <pointLight position={[0, 5, -8]} intensity={1} color="#00ff00" />
             <directionalLight position={[-5, 5, 5]} intensity={0.8} />
-            <fog attach="fog" args={['#0a0a0f', 10, 30]} />
+            <fog attach="fog" args={['#0a0a0f', 15, 35]} />
+            
+            {/* Animated Camera */}
+            <CameraRig />
             
             {/* Grid Floor */}
             <GridFloor />
             
+            {/* Warehouse Building */}
+            <Warehouse />
+            
+            {/* Dock Platform */}
+            <DockPlatform />
+            
             {/* Floating Particles */}
             <FloatingParticles />
             
-            {/* Trailers with varied states */}
-            <Trailer position={[0, 0, 0]} rotation={0.2} color="#e8e8e8" isHighlighted={true} />
-            <Trailer position={[3, 0, 1]} rotation={0.15} color="#d0d0d0" />
-            <Trailer position={[-3, 0, 2]} rotation={-0.1} color="#c8c8c8" />
-            <Trailer position={[1.5, 0, -2]} rotation={0.3} color="#f0f0f0" isHighlighted={true} />
-            <Trailer position={[-2, 0, -1.5]} rotation={-0.2} color="#ddd" />
-            <Trailer position={[4, 0, -1]} rotation={0.1} color="#e0e0e0" />
-            <Trailer position={[-4, 0, 0]} rotation={-0.15} color="#d5d5d5" isHighlighted={true} />
+            {/* Trailers at dock */}
+            <Trailer position={[-4, 0, -2.5]} rotation={0} color="#e8e8e8" isHighlighted={true} />
+            <Trailer position={[-1.5, 0, -2.5]} rotation={0} color="#d0d0d0" isHighlighted={true} />
+            <Trailer position={[1, 0, -2.5]} rotation={0} color="#f0f0f0" />
+            <Trailer position={[3.5, 0, -2.5]} rotation={0} color="#ddd" isHighlighted={true} />
+            
+            {/* Trailers in yard */}
+            <Trailer position={[-3, 0, 3]} rotation={0.3} color="#c8c8c8" />
+            <Trailer position={[0, 0, 4]} rotation={-0.2} color="#e0e0e0" />
+            <Trailer position={[4, 0, 2]} rotation={0.1} color="#d5d5d5" />
         </Canvas>
+      </div>
+      
+      {/* Mini Radar */}
+      <div style={{
+        position: 'absolute',
+        top: 110,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '80px',
+        height: '80px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(0, 20, 30, 0.9) 0%, rgba(0, 10, 20, 0.95) 100%)',
+        border: '2px solid rgba(0, 255, 255, 0.4)',
+        boxShadow: '0 0 20px rgba(0, 255, 255, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.5)',
+        zIndex: 1000,
+        overflow: 'hidden'
+      }}>
+        {/* Radar Grid */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: '60px',
+          height: '60px',
+          transform: 'translate(-50%, -50%)',
+          border: '1px solid rgba(0, 255, 255, 0.2)',
+          borderRadius: '50%'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: '30px',
+          height: '30px',
+          transform: 'translate(-50%, -50%)',
+          border: '1px solid rgba(0, 255, 255, 0.15)',
+          borderRadius: '50%'
+        }} />
+        {/* Crosshairs */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: 0,
+          right: 0,
+          height: '1px',
+          background: 'rgba(0, 255, 255, 0.2)'
+        }} />
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: 0,
+          bottom: 0,
+          width: '1px',
+          background: 'rgba(0, 255, 255, 0.2)'
+        }} />
+        {/* Sweep Line */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: '40px',
+          height: '2px',
+          background: 'linear-gradient(90deg, rgba(0, 255, 255, 0.8), transparent)',
+          transformOrigin: 'left center',
+          animation: 'radar-sweep 3s linear infinite'
+        }} />
+        {/* Blips */}
+        <div style={{
+          position: 'absolute',
+          top: '30%',
+          left: '60%',
+          width: '4px',
+          height: '4px',
+          background: '#00ff00',
+          borderRadius: '50%',
+          boxShadow: '0 0 6px #00ff00',
+          animation: 'pulse 1s infinite'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '55%',
+          left: '25%',
+          width: '4px',
+          height: '4px',
+          background: '#00ff00',
+          borderRadius: '50%',
+          boxShadow: '0 0 6px #00ff00',
+          animation: 'pulse 1.5s infinite'
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '70%',
+          left: '65%',
+          width: '3px',
+          height: '3px',
+          background: '#ffff00',
+          borderRadius: '50%',
+          boxShadow: '0 0 6px #ffff00',
+          animation: 'pulse 2s infinite'
+        }} />
       </div>
       
       {/* UI Overlay */}
@@ -346,7 +577,7 @@ export default function YardMap() {
         onClick={() => setShowBOL(true)}
         style={{
           position: 'absolute',
-          top: 80,
+          top: 200,
           left: '50%',
           transform: 'translateX(-50%)',
           background: 'linear-gradient(135deg, #00ff00 0%, #00cc00 100%)',

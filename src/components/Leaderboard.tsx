@@ -66,7 +66,7 @@ export default function Leaderboard() {
   return (
     <div style={{
       position: 'absolute',
-      top: 80,
+      top: 110,
       right: 20,
       width: '360px',
       background: 'linear-gradient(135deg, rgba(0, 10, 20, 0.95) 0%, rgba(10, 5, 25, 0.95) 100%)',

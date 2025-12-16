@@ -71,7 +71,7 @@ export default function AssetPalette() {
   return (
     <div style={{ 
       position: 'absolute', 
-      top: 80, 
+      top: 110, 
       left: 20, 
       background: 'linear-gradient(135deg, rgba(0, 10, 20, 0.95) 0%, rgba(10, 5, 25, 0.95) 100%)', 
       borderRadius: '8px',
