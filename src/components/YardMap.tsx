@@ -111,6 +111,54 @@ const GridFloor = () => {
   );
 }
 
+// Floating Particles Effect
+const FloatingParticles = () => {
+  const particlesRef = useRef<any>();
+  const count = 50;
+  
+  // Generate random positions
+  const positions = React.useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 20;
+      pos[i * 3 + 1] = Math.random() * 8 + 1;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 20;
+    }
+    return pos;
+  }, []);
+  
+  useFrame((state) => {
+    if (particlesRef.current) {
+      particlesRef.current.rotation.y = state.clock.elapsedTime * 0.02;
+      const positions = particlesRef.current.geometry.attributes.position.array;
+      for (let i = 0; i < count; i++) {
+        positions[i * 3 + 1] += Math.sin(state.clock.elapsedTime + i) * 0.002;
+      }
+      particlesRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+  });
+  
+  return (
+    <points ref={particlesRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={count}
+          array={positions}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.08}
+        color="#00ffff"
+        transparent
+        opacity={0.6}
+        sizeAttenuation
+      />
+    </points>
+  );
+}
+
 // Type for API response
 interface ScoreData {
   score: number;
@@ -275,12 +323,17 @@ export default function YardMap() {
             {/* Grid Floor */}
             <GridFloor />
             
+            {/* Floating Particles */}
+            <FloatingParticles />
+            
             {/* Trailers with varied states */}
             <Trailer position={[0, 0, 0]} rotation={0.2} color="#e8e8e8" isHighlighted={true} />
             <Trailer position={[3, 0, 1]} rotation={0.15} color="#d0d0d0" />
             <Trailer position={[-3, 0, 2]} rotation={-0.1} color="#c8c8c8" />
             <Trailer position={[1.5, 0, -2]} rotation={0.3} color="#f0f0f0" isHighlighted={true} />
             <Trailer position={[-2, 0, -1.5]} rotation={-0.2} color="#ddd" />
+            <Trailer position={[4, 0, -1]} rotation={0.1} color="#e0e0e0" />
+            <Trailer position={[-4, 0, 0]} rotation={-0.15} color="#d5d5d5" isHighlighted={true} />
         </Canvas>
       </div>
       
@@ -445,14 +498,98 @@ export default function YardMap() {
         </div>
       </div>
       
+      {/* Live Activity Feed - Bottom Right */}
+      <div style={{
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        width: '280px',
+        background: 'linear-gradient(135deg, rgba(0, 10, 20, 0.9) 0%, rgba(10, 5, 25, 0.9) 100%)',
+        border: '1px solid rgba(255, 0, 255, 0.3)',
+        borderRadius: '8px',
+        padding: '15px',
+        fontFamily: '"JetBrains Mono", monospace',
+        fontSize: '0.7rem',
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 0 20px rgba(255, 0, 255, 0.1)',
+        zIndex: 1000,
+        animation: 'slideInRight 0.5s ease-out'
+      }}>
+        <div style={{ 
+          color: '#ff00ff', 
+          marginBottom: '10px',
+          fontSize: '0.65rem',
+          letterSpacing: '2px',
+          textTransform: 'uppercase',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span style={{ animation: 'pulse 1s infinite' }}>⚡</span>
+          Live Activity
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            color: '#888',
+            padding: '6px 8px',
+            background: 'rgba(0, 255, 0, 0.05)',
+            borderRadius: '4px',
+            borderLeft: '2px solid #00ff00'
+          }}>
+            <span>🚛 TRL-55920 arrived</span>
+            <span style={{ color: '#00ff00' }}>2m ago</span>
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            color: '#888',
+            padding: '6px 8px',
+            background: 'rgba(0, 255, 255, 0.05)',
+            borderRadius: '4px',
+            borderLeft: '2px solid #00ffff'
+          }}>
+            <span>🚪 Dock 04 assigned</span>
+            <span style={{ color: '#00ffff' }}>2m ago</span>
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            color: '#888',
+            padding: '6px 8px',
+            background: 'rgba(255, 255, 0, 0.05)',
+            borderRadius: '4px',
+            borderLeft: '2px solid #ffff00'
+          }}>
+            <span>📦 Load verified</span>
+            <span style={{ color: '#ffff00' }}>5m ago</span>
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            color: '#888',
+            padding: '6px 8px',
+            background: 'rgba(0, 255, 0, 0.05)',
+            borderRadius: '4px',
+            borderLeft: '2px solid #00ff00'
+          }}>
+            <span>✓ TRL-44101 departed</span>
+            <span style={{ color: '#00ff00' }}>8m ago</span>
+          </div>
+        </div>
+      </div>
+      
       {/* Easter Egg Hint (subtle) */}
       <div style={{
         position: 'absolute',
         bottom: 10,
-        right: 10,
-        fontSize: '0.6rem',
-        color: '#222',
-        zIndex: 100
+        left: '50%',
+        transform: 'translateX(-50%)',
+        fontSize: '0.55rem',
+        color: '#1a1a1a',
+        zIndex: 100,
+        letterSpacing: '2px'
       }}>
         ↑↑↓↓←→←→BA
       </div>
