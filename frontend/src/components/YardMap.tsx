@@ -9,7 +9,8 @@ import DigitalBOL from './DigitalBOL';
 
 // MAPBOX TOKEN REQUIRED HERE
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// Default to the live Render backend if the environment variable is not set
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://project-genesis-backend-8uk2.onrender.com';
 
 // --- 3D Components ---
 
