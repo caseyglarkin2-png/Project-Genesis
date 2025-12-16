@@ -63,10 +63,25 @@ const Trailer = ({ position, rotation = 0, color = "white" }: { position: [numbe
   );
 }
 
+// Type for API response
+interface ScoreData {
+  score: number;
+  classification: string;
+  details?: {
+    trailers: number;
+    paved_pct: number;
+    gates: number;
+  };
+}
+
 export default function YardMap() {
   const mapRef = useRef<MapRef>(null);
   const [showBOL, setShowBOL] = useState(false);
-  const [scoreData, setScoreData] = useState({ score: 0, classification: 'LOADING...' });
+  const [scoreData, setScoreData] = useState<ScoreData>({ 
+    score: 0, 
+    classification: 'LOADING...',
+    details: undefined
+  });
   const [viewState, setViewState] = useState({
     longitude: -78.789,
     latitude: 34.754,
@@ -80,10 +95,19 @@ export default function YardMap() {
       try {
         const res = await fetch(`${API_URL}/api/score?lat=${viewState.latitude}&lon=${viewState.longitude}`);
         const data = await res.json();
-        setScoreData(data);
+        setScoreData({
+          score: data.score,
+          classification: data.classification,
+          details: data.details
+        });
       } catch (error) {
         console.error("Failed to fetch score:", error);
-        setScoreData({ score: 75.5, classification: 'OFFLINE MODE' }); // Fallback
+        // Fallback with mock data
+        setScoreData({ 
+          score: 75.5, 
+          classification: 'OFFLINE MODE',
+          details: { trailers: 120, paved_pct: 78.5, gates: 3 }
+        });
       }
     };
 
@@ -149,9 +173,92 @@ export default function YardMap() {
 
       {showBOL && <DigitalBOL onClose={() => setShowBOL(false)} />}
       
-      <div style={{ position: 'absolute', bottom: 20, left: 20, color: 'white', fontFamily: 'monospace', background: 'rgba(0,0,0,0.7)', padding: '10px' }}>
-        <h3>YARD VELOCITY SCORE: {scoreData.score}</h3>
-        <p>Status: {scoreData.classification}</p>
+      {/* Enhanced Score Display Panel */}
+      <div style={{ 
+        position: 'absolute', 
+        bottom: 20, 
+        left: 20, 
+        color: 'white', 
+        fontFamily: '"Courier New", monospace', 
+        background: 'rgba(0, 10, 20, 0.95)', 
+        padding: '15px',
+        border: '1px solid #00ffff',
+        borderRadius: '6px',
+        boxShadow: '0 0 15px rgba(0, 255, 255, 0.3)',
+        minWidth: '280px'
+      }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '10px',
+          paddingBottom: '10px',
+          borderBottom: '1px solid #333'
+        }}>
+          <span style={{ color: '#00ffff', fontSize: '0.8rem', textTransform: 'uppercase' }}>
+            Facility Analysis
+          </span>
+          <span style={{ 
+            fontSize: '0.7rem', 
+            color: scoreData.score >= 80 ? '#00ff00' : scoreData.score >= 50 ? '#ffff00' : '#ff0000',
+            background: 'rgba(0,0,0,0.5)',
+            padding: '2px 8px',
+            borderRadius: '10px'
+          }}>
+            {scoreData.score >= 80 ? '🐋 WHALE' : scoreData.score >= 50 ? '🎯 STANDARD' : '📉 LOW'}
+          </span>
+        </div>
+        
+        <div style={{ 
+          fontSize: '2.5rem', 
+          fontWeight: 'bold', 
+          color: scoreData.score >= 80 ? '#00ff00' : scoreData.score >= 50 ? '#ffff00' : '#ff0000',
+          textShadow: `0 0 20px ${scoreData.score >= 80 ? '#00ff00' : scoreData.score >= 50 ? '#ffff00' : '#ff0000'}40`,
+          marginBottom: '5px'
+        }}>
+          {scoreData.score}
+          <span style={{ fontSize: '1rem', color: '#666' }}>/100</span>
+        </div>
+        
+        <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '12px' }}>
+          {scoreData.classification}
+        </div>
+        
+        {/* Score Breakdown */}
+        {scoreData.details && (
+          <div style={{ 
+            background: 'rgba(0, 0, 0, 0.3)', 
+            padding: '10px', 
+            borderRadius: '4px',
+            fontSize: '0.75rem'
+          }}>
+            <div style={{ color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>
+              Detection Results
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ color: '#888' }}>🚛 Trailers Detected:</span>
+              <span style={{ color: '#fff' }}>{scoreData.details.trailers}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ color: '#888' }}>📐 Paved Area:</span>
+              <span style={{ color: '#fff' }}>{scoreData.details.paved_pct}%</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: '#888' }}>🚧 Gate Nodes:</span>
+              <span style={{ color: '#fff' }}>{scoreData.details.gates}</span>
+            </div>
+          </div>
+        )}
+        
+        <div style={{ 
+          marginTop: '10px', 
+          paddingTop: '10px', 
+          borderTop: '1px solid #333',
+          fontSize: '0.65rem',
+          color: '#555'
+        }}>
+          YVS = (50% × Paved) + (30% × Trailers) + (20% × Gates)
+        </div>
       </div>
     </div>
   );
