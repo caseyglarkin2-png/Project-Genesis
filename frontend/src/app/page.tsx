@@ -1,6 +1,6 @@
 'use client'
 
-import YardMap from '@/components/YardMap'
+import YardMap from '../components/YardMap'
 
 export default function Home() {
   return (

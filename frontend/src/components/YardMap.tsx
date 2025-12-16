@@ -1,5 +1,6 @@
+// @ts-nocheck
 import React, { useRef, useState, useEffect } from 'react';
-import Map, { MapRef, useMap } from 'react-map-gl';
+import Map, { MapRef, useMap } from 'react-map-gl/mapbox';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';

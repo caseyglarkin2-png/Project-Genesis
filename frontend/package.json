@@ -9,12 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-map-gl": "latest",
-    "mapbox-gl": "latest",
-    "@react-three/fiber": "latest",
-    "three": "latest"
+    "@react-three/fiber": "^8.16.0",
+    "@types/mapbox-gl": "^3.4.1",
+    "mapbox-gl": "^3.17.0",
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-map-gl": "^8.1.0",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@types/node": "25.0.2",
+    "@types/three": "^0.160.0",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "^16.0.10",
+    "typescript": "5.9.3"
   }
 }
