@@ -9,11 +9,72 @@ import Leaderboard from './Leaderboard';
 import DigitalBOL from './DigitalBOL';
 import CommandHeader from './CommandHeader';
 import TeamInvitation from './TeamInvitation';
+import ROICalculator from './ROICalculator';
+import NetworkMap from './NetworkMap';
 
 // MAPBOX TOKEN REQUIRED HERE
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 // Default to the live Render backend if the environment variable is not set
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://project-genesis-backend-8uk2.onrender.com';
+
+// --- Sound System ---
+let audioContext: AudioContext | null = null;
+
+const playSound = (type: string) => {
+  try {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    const ctx = audioContext;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    const now = ctx.currentTime;
+    const volume = 0.2;
+
+    switch (type) {
+      case 'truckArrival':
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(80, now);
+        oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.3);
+        gainNode.gain.setValueAtTime(volume, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        oscillator.start(now);
+        oscillator.stop(now + 0.4);
+        break;
+      case 'truckDeparture':
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(400, now);
+        oscillator.frequency.exponentialRampToValueAtTime(80, now + 0.5);
+        gainNode.gain.setValueAtTime(volume * 0.8, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        oscillator.start(now);
+        oscillator.stop(now + 0.5);
+        break;
+      case 'dockAssign':
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(440, now);
+        oscillator.frequency.setValueAtTime(660, now + 0.1);
+        gainNode.gain.setValueAtTime(volume * 0.5, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        oscillator.start(now);
+        oscillator.stop(now + 0.2);
+        break;
+      case 'notification':
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, now);
+        oscillator.frequency.exponentialRampToValueAtTime(440, now + 0.15);
+        gainNode.gain.setValueAtTime(volume * 0.5, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        oscillator.start(now);
+        oscillator.stop(now + 0.2);
+        break;
+    }
+  } catch (e) {
+    // Silent fail if audio not available
+  }
+};
 
 // --- 3D Components ---
 
@@ -182,6 +243,129 @@ const DockPlatform = ({ position = [0, 0, -4.5] as [number, number, number] }) =
   );
 }
 
+// Animated Truck - Drives in from the right, stops, then drives out
+const AnimatedTruck = ({ startDelay = 0, lane = 0 }: { startDelay?: number, lane?: number }) => {
+  const groupRef = useRef<any>();
+  const [phase, setPhase] = useState<'waiting' | 'arriving' | 'stopped' | 'departing' | 'done'>('waiting');
+  const startTimeRef = useRef<number | null>(null);
+  const laneZ = 5 + lane * 3;
+  
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    
+    const time = state.clock.elapsedTime;
+    
+    // Initialize start time
+    if (startTimeRef.current === null) {
+      startTimeRef.current = time + startDelay;
+    }
+    
+    const elapsed = time - startTimeRef.current;
+    
+    if (elapsed < 0) {
+      // Still waiting
+      groupRef.current.position.x = 15;
+      return;
+    }
+    
+    if (phase === 'waiting' && elapsed >= 0) {
+      setPhase('arriving');
+    }
+    
+    if (phase === 'arriving') {
+      // Drive in from right
+      const progress = Math.min(elapsed / 3, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // Ease out
+      groupRef.current.position.x = 15 - eased * 17; // Stop at x = -2
+      groupRef.current.position.z = laneZ;
+      
+      if (progress >= 1) {
+        setPhase('stopped');
+      }
+    }
+    
+    if (phase === 'stopped') {
+      // Wait for 4 seconds
+      if (elapsed > 7) {
+        setPhase('departing');
+      }
+    }
+    
+    if (phase === 'departing') {
+      // Drive out to the left
+      const departTime = elapsed - 7;
+      const progress = Math.min(departTime / 3, 1);
+      const eased = progress * progress; // Ease in
+      groupRef.current.position.x = -2 - eased * 15;
+      
+      if (progress >= 1) {
+        setPhase('done');
+        // Reset for next cycle
+        startTimeRef.current = time + 5 + Math.random() * 10;
+        setPhase('waiting');
+      }
+    }
+  });
+  
+  return (
+    <group ref={groupRef} position={[15, 0, laneZ]} rotation={[0, Math.PI / 2, 0]}>
+      {/* Cab */}
+      <mesh position={[1.3, 0.6, 0]}>
+        <boxGeometry args={[1, 1, 0.9]} />
+        <meshStandardMaterial 
+          color="#2255cc" 
+          roughness={0.3}
+          metalness={0.6}
+        />
+      </mesh>
+      {/* Cab Roof */}
+      <mesh position={[1.3, 1.2, 0]}>
+        <boxGeometry args={[0.9, 0.3, 0.85]} />
+        <meshStandardMaterial color="#1a3d8f" />
+      </mesh>
+      {/* Trailer Connection */}
+      <mesh position={[0, 0.5, 0]}>
+        <boxGeometry args={[2.5, 1, 0.8]} />
+        <meshStandardMaterial 
+          color="#e0e0e0" 
+          roughness={0.4}
+          metalness={0.3}
+        />
+      </mesh>
+      {/* Wheels */}
+      {[-0.8, -0.4, 1.0, 1.4].map((x, i) => (
+        <mesh key={i} position={[x, 0.15, 0.35]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.1, 16]} />
+          <meshStandardMaterial color="#1a1a1a" />
+        </mesh>
+      ))}
+      {[-0.8, -0.4, 1.0, 1.4].map((x, i) => (
+        <mesh key={i + 10} position={[x, 0.15, -0.35]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.15, 0.15, 0.1, 16]} />
+          <meshStandardMaterial color="#1a1a1a" />
+        </mesh>
+      ))}
+      {/* Headlights */}
+      <mesh position={[1.85, 0.5, 0.3]}>
+        <sphereGeometry args={[0.06, 16, 16]} />
+        <meshStandardMaterial 
+          color="#ffff00" 
+          emissive="#ffff00"
+          emissiveIntensity={2}
+        />
+      </mesh>
+      <mesh position={[1.85, 0.5, -0.3]}>
+        <sphereGeometry args={[0.06, 16, 16]} />
+        <meshStandardMaterial 
+          color="#ffff00" 
+          emissive="#ffff00"
+          emissiveIntensity={2}
+        />
+      </mesh>
+    </group>
+  );
+}
+
 // Animated Camera Rig
 const CameraRig = () => {
   useFrame((state) => {
@@ -256,6 +440,9 @@ export default function YardMap() {
   const mapRef = useRef<MapRef>(null);
   const [showBOL, setShowBOL] = useState(false);
   const [showInvitation, setShowInvitation] = useState(false);
+  const [showROI, setShowROI] = useState(false);
+  const [showNetwork, setShowNetwork] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [logoClicks, setLogoClicks] = useState(0);
   const [scoreData, setScoreData] = useState<ScoreData>({ 
     score: 0, 
@@ -263,12 +450,49 @@ export default function YardMap() {
     details: undefined
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [activityLog, setActivityLog] = useState([
+    { id: 1, text: '🚛 TRL-55920 arrived', time: '2m ago', color: '#00ff00' },
+    { id: 2, text: '🚪 Dock 04 assigned', time: '2m ago', color: '#00ffff' },
+    { id: 3, text: '📦 Load verified', time: '5m ago', color: '#ffff00' },
+    { id: 4, text: '✓ TRL-44101 departed', time: '8m ago', color: '#00ff00' },
+  ]);
   const [viewState, setViewState] = useState({
     longitude: -78.789,
     latitude: 34.754,
     zoom: 18,
     pitch: 45
   });
+
+  // Simulate live activity feed
+  useEffect(() => {
+    const events = [
+      { text: '🚛 TRL-{ID} arrived', color: '#00ff00', sound: 'truckArrival' },
+      { text: '🚪 Dock {DOCK} assigned', color: '#00ffff', sound: 'dockAssign' },
+      { text: '📦 Load verified at Dock {DOCK}', color: '#ffff00', sound: 'notification' },
+      { text: '✓ TRL-{ID} departed', color: '#00ff00', sound: 'truckDeparture' },
+      { text: '⚠ Yard check initiated', color: '#ff6600', sound: 'notification' },
+    ];
+
+    const interval = setInterval(() => {
+      const event = events[Math.floor(Math.random() * events.length)];
+      const newEvent = {
+        id: Date.now(),
+        text: event.text
+          .replace('{ID}', String(10000 + Math.floor(Math.random() * 90000)))
+          .replace('{DOCK}', String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')),
+        time: 'now',
+        color: event.color,
+      };
+      
+      if (soundEnabled) {
+        playSound(event.sound);
+      }
+      
+      setActivityLog(prev => [newEvent, ...prev.slice(0, 3)]);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [soundEnabled]);
 
   // Konami code detection for easter egg
   useEffect(() => {
@@ -465,13 +689,79 @@ export default function YardMap() {
             <Trailer position={[-3, 0, 3]} rotation={0.3} color="#c8c8c8" />
             <Trailer position={[0, 0, 4]} rotation={-0.2} color="#e0e0e0" />
             <Trailer position={[4, 0, 2]} rotation={0.1} color="#d5d5d5" />
+            
+            {/* Animated Trucks driving through */}
+            <AnimatedTruck startDelay={0} lane={0} />
+            <AnimatedTruck startDelay={5} lane={1} />
+            <AnimatedTruck startDelay={12} lane={0} />
         </Canvas>
+      </div>
+      
+      {/* Quick Action Buttons */}
+      <div style={{
+        position: 'absolute',
+        top: 110,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex',
+        gap: '10px',
+        zIndex: 1000
+      }}>
+        <button
+          onClick={() => setShowROI(true)}
+          style={{
+            background: 'linear-gradient(135deg, rgba(0, 255, 0, 0.2) 0%, rgba(0, 200, 0, 0.1) 100%)',
+            border: '1px solid rgba(0, 255, 0, 0.4)',
+            color: '#00ff00',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: '0.7rem',
+            letterSpacing: '1px',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          💰 ROI Calculator
+        </button>
+        <button
+          onClick={() => setShowNetwork(true)}
+          style={{
+            background: 'linear-gradient(135deg, rgba(0, 255, 255, 0.2) 0%, rgba(0, 200, 200, 0.1) 100%)',
+            border: '1px solid rgba(0, 255, 255, 0.4)',
+            color: '#00ffff',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: '0.7rem',
+            letterSpacing: '1px',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          🌐 Network (25 Sites)
+        </button>
+        <button
+          onClick={() => setSoundEnabled(!soundEnabled)}
+          style={{
+            background: soundEnabled ? 'rgba(0, 255, 255, 0.1)' : 'rgba(255, 0, 0, 0.1)',
+            border: `1px solid ${soundEnabled ? 'rgba(0, 255, 255, 0.4)' : 'rgba(255, 0, 0, 0.4)'}`,
+            color: soundEnabled ? '#00ffff' : '#ff4444',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: '0.9rem'
+          }}
+        >
+          {soundEnabled ? '🔊' : '🔇'}
+        </button>
       </div>
       
       {/* Mini Radar */}
       <div style={{
         position: 'absolute',
-        top: 110,
+        top: 160,
         left: '50%',
         transform: 'translateX(-50%)',
         width: '80px',
@@ -760,54 +1050,24 @@ export default function YardMap() {
           Live Activity
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            color: '#888',
-            padding: '6px 8px',
-            background: 'rgba(0, 255, 0, 0.05)',
-            borderRadius: '4px',
-            borderLeft: '2px solid #00ff00'
-          }}>
-            <span>🚛 TRL-55920 arrived</span>
-            <span style={{ color: '#00ff00' }}>2m ago</span>
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            color: '#888',
-            padding: '6px 8px',
-            background: 'rgba(0, 255, 255, 0.05)',
-            borderRadius: '4px',
-            borderLeft: '2px solid #00ffff'
-          }}>
-            <span>🚪 Dock 04 assigned</span>
-            <span style={{ color: '#00ffff' }}>2m ago</span>
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            color: '#888',
-            padding: '6px 8px',
-            background: 'rgba(255, 255, 0, 0.05)',
-            borderRadius: '4px',
-            borderLeft: '2px solid #ffff00'
-          }}>
-            <span>📦 Load verified</span>
-            <span style={{ color: '#ffff00' }}>5m ago</span>
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            color: '#888',
-            padding: '6px 8px',
-            background: 'rgba(0, 255, 0, 0.05)',
-            borderRadius: '4px',
-            borderLeft: '2px solid #00ff00'
-          }}>
-            <span>✓ TRL-44101 departed</span>
-            <span style={{ color: '#00ff00' }}>8m ago</span>
-          </div>
+          {activityLog.map((event) => (
+            <div 
+              key={event.id}
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                color: '#888',
+                padding: '6px 8px',
+                background: `${event.color}08`,
+                borderRadius: '4px',
+                borderLeft: `2px solid ${event.color}`,
+                animation: event.time === 'now' ? 'fadeIn 0.3s ease-out' : 'none'
+              }}
+            >
+              <span>{event.text}</span>
+              <span style={{ color: event.color }}>{event.time}</span>
+            </div>
+          ))}
         </div>
       </div>
       
@@ -824,6 +1084,16 @@ export default function YardMap() {
       }}>
         ↑↑↓↓←→←→BA
       </div>
+      
+      {/* ROI Calculator Modal */}
+      {showROI && (
+        <ROICalculator onClose={() => setShowROI(false)} />
+      )}
+      
+      {/* Network Map Modal */}
+      {showNetwork && (
+        <NetworkMap onClose={() => setShowNetwork(false)} />
+      )}
     </div>
   );
 }
