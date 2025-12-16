@@ -1,24 +1,261 @@
+/* ============================================================================
+   PROJECT GENESIS - INDUSTRIAL SCI-FI DARK MODE
+   "SimCity for Logistics" - Cyberpunk Aesthetic
+   ============================================================================ */
+
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
 }
 
+:root {
+  /* Neon Color Palette */
+  --neon-cyan: #00ffff;
+  --neon-green: #00ff00;
+  --neon-magenta: #ff00ff;
+  --neon-yellow: #ffff00;
+  --neon-orange: #ff6600;
+  --neon-red: #ff0044;
+  
+  /* Dark Backgrounds */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #0d1117;
+  --bg-panel: rgba(0, 10, 20, 0.95);
+  --bg-hover: rgba(0, 255, 255, 0.1);
+  
+  /* Text */
+  --text-primary: #e0e0e0;
+  --text-secondary: #888888;
+  --text-muted: #555555;
+  
+  /* Glow Effects */
+  --glow-cyan: 0 0 20px rgba(0, 255, 255, 0.4);
+  --glow-green: 0 0 20px rgba(0, 255, 0, 0.4);
+  --glow-magenta: 0 0 20px rgba(255, 0, 255, 0.4);
+}
+
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: 
+    radial-gradient(ellipse at top, rgba(0, 255, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom, rgba(255, 0, 255, 0.03) 0%, transparent 50%),
+    var(--bg-primary);
 }
 
 a {
-  color: inherit;
+  color: var(--neon-cyan);
   text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  text-shadow: var(--glow-cyan);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neon-cyan);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-green);
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan); }
+  50% { box-shadow: 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-cyan); }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: var(--neon-cyan); }
+  50% { border-color: var(--neon-magenta); }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes data-stream {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes float-centered {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-5px); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink {
+  0%, 50% { border-color: var(--neon-green); }
+  51%, 100% { border-color: transparent; }
+}
+
+@keyframes rainbow-border {
+  0% { border-color: var(--neon-cyan); }
+  25% { border-color: var(--neon-green); }
+  50% { border-color: var(--neon-magenta); }
+  75% { border-color: var(--neon-yellow); }
+  100% { border-color: var(--neon-cyan); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+.animate-glow {
+  animation: glow-pulse 2s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+.animate-slideInUp {
+  animation: slideInUp 0.5s ease-out;
+}
+
+/* Scan Line Effect (overlay) */
+.scan-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+  animation: scan-line 3s linear infinite;
+  pointer-events: none;
+}
+
+/* Neon Text */
+.neon-text-cyan {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+}
+
+.neon-text-green {
+  color: var(--neon-green);
+  text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+}
+
+.neon-text-magenta {
+  color: var(--neon-magenta);
+  text-shadow: 0 0 10px var(--neon-magenta), 0 0 20px var(--neon-magenta);
+}
+
+/* Glass Panel Effect */
+.glass-panel {
+  background: rgba(0, 10, 20, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  box-shadow: 
+    0 0 20px rgba(0, 255, 255, 0.1),
+    inset 0 0 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Grid Background */
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Data Stream Background */
+.data-stream-bg {
+  background: 
+    linear-gradient(180deg, 
+      transparent 0%, 
+      rgba(0, 255, 255, 0.02) 50%, 
+      transparent 100%);
+  background-size: 100% 200%;
+  animation: data-stream 2s linear infinite;
 }

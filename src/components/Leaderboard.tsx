@@ -66,46 +66,72 @@ export default function Leaderboard() {
   return (
     <div style={{
       position: 'absolute',
-      top: 20,
+      top: 80,
       right: 20,
-      width: '340px',
-      background: 'rgba(0, 10, 20, 0.95)',
-      border: '1px solid #00ffff',
-      borderRadius: '4px',
+      width: '360px',
+      background: 'linear-gradient(135deg, rgba(0, 10, 20, 0.95) 0%, rgba(10, 5, 25, 0.95) 100%)',
+      border: '1px solid rgba(0, 255, 255, 0.4)',
+      borderRadius: '8px',
       color: '#e0e0e0',
-      fontFamily: '"Courier New", Courier, monospace',
-      boxShadow: '0 0 15px rgba(0, 255, 255, 0.3)',
+      fontFamily: '"JetBrains Mono", "Courier New", monospace',
+      boxShadow: '0 0 30px rgba(0, 255, 255, 0.2), inset 0 0 60px rgba(0, 0, 0, 0.3)',
+      backdropFilter: 'blur(10px)',
       zIndex: 1000,
-      padding: '0'
+      padding: '0',
+      animation: 'slideInRight 0.5s ease-out'
     }}>
       {/* Header */}
       <div style={{
-        padding: '10px 12px',
-        borderBottom: '1px solid #00ffff',
-        background: 'rgba(0, 255, 255, 0.1)',
+        padding: '12px 15px',
+        borderBottom: '1px solid rgba(0, 255, 255, 0.3)',
+        background: 'linear-gradient(90deg, rgba(0, 255, 255, 0.15) 0%, rgba(255, 0, 255, 0.05) 100%)',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        borderRadius: '7px 7px 0 0'
       }}>
-        <h3 style={{ margin: 0, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Network Velocity
+        <h3 style={{ 
+          margin: 0, 
+          fontSize: '0.9rem', 
+          textTransform: 'uppercase', 
+          letterSpacing: '2px',
+          background: 'linear-gradient(90deg, #00ffff, #00ff00)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          fontWeight: 'bold'
+        }}>
+          🏆 Network Velocity
         </h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button 
             onClick={() => setShowLegend(!showLegend)}
             style={{ 
-              background: 'none', 
-              border: '1px solid #00ffff', 
+              background: 'rgba(0, 255, 255, 0.1)', 
+              border: '1px solid rgba(0, 255, 255, 0.4)', 
               color: '#00ffff', 
-              padding: '2px 6px', 
+              padding: '4px 10px', 
               cursor: 'pointer',
-              fontSize: '0.7rem',
-              borderRadius: '2px'
+              fontSize: '0.65rem',
+              borderRadius: '4px',
+              transition: 'all 0.3s ease',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
             }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(0, 255, 255, 0.2)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(0, 255, 255, 0.1)'}
           >
             {showLegend ? 'HIDE' : 'INFO'}
           </button>
-          <span style={{ fontSize: '0.7rem', color: '#00ff00', animation: 'pulse 2s infinite' }}>● LIVE</span>
+          <span style={{ 
+            fontSize: '0.7rem', 
+            color: '#00ff00', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '4px',
+            textShadow: '0 0 10px #00ff00'
+          }}>
+            <span style={{ animation: 'pulse 1s infinite' }}>●</span> LIVE
+          </span>
         </div>
       </div>
 
