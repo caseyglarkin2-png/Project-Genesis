@@ -5,6 +5,14 @@ from dragnet import calculate_velocity_score, mock_yolo_inference, mock_sam_segm
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend communication
 
+@app.route('/', methods=['GET'])
+def health_check():
+    return jsonify({
+        "status": "online",
+        "message": "Project Genesis Backend is Live",
+        "version": "1.0.0"
+    })
+
 @app.route('/api/score', methods=['GET'])
 def get_score():
     lat = float(request.args.get('lat', 34.754))
