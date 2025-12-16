@@ -23,6 +23,7 @@ interface Facility {
 }
 
 const NETWORK_FACILITIES: Facility[] = [
+  // SOUTHEAST REGION
   { id: 'JAX-001', name: 'Jacksonville DC', location: 'Jacksonville, FL', coordinates: { lat: 30.33, lng: -81.66 }, score: 75.5, status: 'online', trucksToday: 142, avgTurnTime: 28, dockDoors: 24, trailerSpots: 120 },
   { id: 'SAV-001', name: 'Savannah Port Terminal', location: 'Savannah, GA', coordinates: { lat: 32.08, lng: -81.09 }, score: 82.1, status: 'online', trucksToday: 198, avgTurnTime: 24, dockDoors: 36, trailerSpots: 200 },
   { id: 'ATL-001', name: 'Atlanta Distribution', location: 'Atlanta, GA', coordinates: { lat: 33.75, lng: -84.39 }, score: 68.4, status: 'warning', trucksToday: 165, avgTurnTime: 32, dockDoors: 28, trailerSpots: 150 },
@@ -31,23 +32,55 @@ const NETWORK_FACILITIES: Facility[] = [
   { id: 'TPA-001', name: 'Tampa Crossdock', location: 'Tampa, FL', coordinates: { lat: 27.95, lng: -82.46 }, score: 78.9, status: 'online', trucksToday: 112, avgTurnTime: 26, dockDoors: 18, trailerSpots: 90 },
   { id: 'ORL-001', name: 'Orlando Fulfillment', location: 'Orlando, FL', coordinates: { lat: 28.54, lng: -81.38 }, score: 84.3, status: 'online', trucksToday: 156, avgTurnTime: 23, dockDoors: 30, trailerSpots: 160 },
   { id: 'BHM-001', name: 'Birmingham Regional', location: 'Birmingham, AL', coordinates: { lat: 33.52, lng: -86.80 }, score: 71.6, status: 'online', trucksToday: 98, avgTurnTime: 29, dockDoors: 16, trailerSpots: 75 },
+  { id: 'CHS-001', name: 'Charleston Port', location: 'Charleston, SC', coordinates: { lat: 32.78, lng: -79.93 }, score: 85.7, status: 'online', trucksToday: 178, avgTurnTime: 23, dockDoors: 32, trailerSpots: 175 },
+  
+  // CENTRAL REGION
   { id: 'NSH-001', name: 'Nashville Metro', location: 'Nashville, TN', coordinates: { lat: 36.16, lng: -86.78 }, score: 79.2, status: 'online', trucksToday: 143, avgTurnTime: 25, dockDoors: 22, trailerSpots: 110 },
-  { id: 'MEM-001', name: 'Memphis Logistics', location: 'Memphis, TN', coordinates: { lat: 35.15, lng: -90.05 }, score: 88.5, status: 'online', trucksToday: 234, avgTurnTime: 21, dockDoors: 48, trailerSpots: 280 },
+  { id: 'MEM-001', name: 'Memphis Logistics Hub', location: 'Memphis, TN', coordinates: { lat: 35.15, lng: -90.05 }, score: 88.5, status: 'online', trucksToday: 234, avgTurnTime: 21, dockDoors: 48, trailerSpots: 280 },
+  { id: 'KNX-001', name: 'Knoxville Regional', location: 'Knoxville, TN', coordinates: { lat: 35.96, lng: -83.92 }, score: 74.1, status: 'online', trucksToday: 82, avgTurnTime: 27, dockDoors: 14, trailerSpots: 70 },
+  { id: 'LIT-001', name: 'Little Rock Hub', location: 'Little Rock, AR', coordinates: { lat: 34.75, lng: -92.29 }, score: 73.5, status: 'online', trucksToday: 89, avgTurnTime: 28, dockDoors: 16, trailerSpots: 80 },
+  { id: 'NOL-001', name: 'New Orleans Terminal', location: 'New Orleans, LA', coordinates: { lat: 29.95, lng: -90.07 }, score: 70.2, status: 'online', trucksToday: 145, avgTurnTime: 30, dockDoors: 24, trailerSpots: 120 },
+  { id: 'DFW-001', name: 'Dallas-Fort Worth DC', location: 'Dallas, TX', coordinates: { lat: 32.78, lng: -96.80 }, score: 86.3, status: 'online', trucksToday: 267, avgTurnTime: 22, dockDoors: 42, trailerSpots: 250 },
+  { id: 'HOU-001', name: 'Houston Distribution', location: 'Houston, TX', coordinates: { lat: 29.76, lng: -95.37 }, score: 81.7, status: 'online', trucksToday: 189, avgTurnTime: 24, dockDoors: 36, trailerSpots: 180 },
+  { id: 'SAT-001', name: 'San Antonio Hub', location: 'San Antonio, TX', coordinates: { lat: 29.42, lng: -98.49 }, score: 76.8, status: 'online', trucksToday: 134, avgTurnTime: 26, dockDoors: 22, trailerSpots: 110 },
+  { id: 'AUS-001', name: 'Austin Fulfillment', location: 'Austin, TX', coordinates: { lat: 30.27, lng: -97.74 }, score: 83.2, status: 'online', trucksToday: 98, avgTurnTime: 23, dockDoors: 18, trailerSpots: 90 },
+  { id: 'OKC-001', name: 'Oklahoma City DC', location: 'Oklahoma City, OK', coordinates: { lat: 35.47, lng: -97.52 }, score: 72.4, status: 'online', trucksToday: 87, avgTurnTime: 28, dockDoors: 16, trailerSpots: 75 },
+  
+  // MIDWEST REGION  
+  { id: 'CHI-001', name: 'Chicago Distribution', location: 'Chicago, IL', coordinates: { lat: 41.88, lng: -87.63 }, score: 77.9, status: 'online', trucksToday: 312, avgTurnTime: 27, dockDoors: 52, trailerSpots: 320 },
+  { id: 'CHI-002', name: 'Chicago South Hub', location: 'Joliet, IL', coordinates: { lat: 41.53, lng: -88.08 }, score: 82.6, status: 'online', trucksToday: 245, avgTurnTime: 24, dockDoors: 40, trailerSpots: 240 },
+  { id: 'DET-001', name: 'Detroit Regional', location: 'Detroit, MI', coordinates: { lat: 42.33, lng: -83.05 }, score: 69.5, status: 'warning', trucksToday: 156, avgTurnTime: 31, dockDoors: 28, trailerSpots: 140 },
+  { id: 'IND-001', name: 'Indianapolis Hub', location: 'Indianapolis, IN', coordinates: { lat: 39.77, lng: -86.16 }, score: 85.1, status: 'online', trucksToday: 178, avgTurnTime: 22, dockDoors: 32, trailerSpots: 165 },
+  { id: 'CLE-001', name: 'Cleveland Distribution', location: 'Cleveland, OH', coordinates: { lat: 41.50, lng: -81.69 }, score: 71.3, status: 'online', trucksToday: 132, avgTurnTime: 28, dockDoors: 24, trailerSpots: 115 },
+  { id: 'COL-001', name: 'Columbus DC', location: 'Columbus, OH', coordinates: { lat: 39.96, lng: -83.00 }, score: 79.8, status: 'online', trucksToday: 167, avgTurnTime: 25, dockDoors: 28, trailerSpots: 145 },
+  { id: 'CIN-001', name: 'Cincinnati Regional', location: 'Cincinnati, OH', coordinates: { lat: 39.10, lng: -84.51 }, score: 74.6, status: 'online', trucksToday: 121, avgTurnTime: 27, dockDoors: 22, trailerSpots: 105 },
+  { id: 'STL-001', name: 'St. Louis Gateway', location: 'St. Louis, MO', coordinates: { lat: 38.63, lng: -90.20 }, score: 80.4, status: 'online', trucksToday: 189, avgTurnTime: 24, dockDoors: 34, trailerSpots: 175 },
+  { id: 'KCM-001', name: 'Kansas City Hub', location: 'Kansas City, MO', coordinates: { lat: 39.10, lng: -94.58 }, score: 78.3, status: 'online', trucksToday: 145, avgTurnTime: 25, dockDoors: 26, trailerSpots: 130 },
+  { id: 'MKE-001', name: 'Milwaukee Distribution', location: 'Milwaukee, WI', coordinates: { lat: 43.04, lng: -87.91 }, score: 75.7, status: 'online', trucksToday: 98, avgTurnTime: 26, dockDoors: 18, trailerSpots: 85 },
+  { id: 'MSP-001', name: 'Minneapolis Hub', location: 'Minneapolis, MN', coordinates: { lat: 44.98, lng: -93.27 }, score: 82.9, status: 'online', trucksToday: 134, avgTurnTime: 23, dockDoors: 24, trailerSpots: 120 },
+  
+  // NORTHEAST REGION
   { id: 'NOR-001', name: 'Norfolk Intermodal', location: 'Norfolk, VA', coordinates: { lat: 36.85, lng: -76.29 }, score: 73.8, status: 'online', trucksToday: 167, avgTurnTime: 27, dockDoors: 26, trailerSpots: 130 },
   { id: 'RIC-001', name: 'Richmond Distribution', location: 'Richmond, VA', coordinates: { lat: 37.54, lng: -77.44 }, score: 66.1, status: 'warning', trucksToday: 88, avgTurnTime: 34, dockDoors: 14, trailerSpots: 65 },
   { id: 'RAL-001', name: 'Raleigh Fulfillment', location: 'Raleigh, NC', coordinates: { lat: 35.78, lng: -78.64 }, score: 81.4, status: 'online', trucksToday: 121, avgTurnTime: 24, dockDoors: 20, trailerSpots: 95 },
-  { id: 'CHS-001', name: 'Charleston Port', location: 'Charleston, SC', coordinates: { lat: 32.78, lng: -79.93 }, score: 85.7, status: 'online', trucksToday: 178, avgTurnTime: 23, dockDoors: 32, trailerSpots: 175 },
-  { id: 'COL-001', name: 'Columbia Hub', location: 'Columbia, SC', coordinates: { lat: 34.00, lng: -81.03 }, score: 69.3, status: 'online', trucksToday: 76, avgTurnTime: 31, dockDoors: 12, trailerSpots: 55 },
-  { id: 'JAX-002', name: 'Jacksonville North', location: 'Jacksonville, FL', coordinates: { lat: 30.45, lng: -81.70 }, score: 77.8, status: 'online', trucksToday: 94, avgTurnTime: 26, dockDoors: 16, trailerSpots: 85 },
-  { id: 'MIA-002', name: 'Miami Perishables', location: 'Doral, FL', coordinates: { lat: 25.82, lng: -80.34 }, score: 89.2, status: 'online', trucksToday: 67, avgTurnTime: 20, dockDoors: 12, trailerSpots: 50 },
-  { id: 'ATL-002', name: 'Atlanta South', location: 'College Park, GA', coordinates: { lat: 33.65, lng: -84.45 }, score: 72.4, status: 'online', trucksToday: 145, avgTurnTime: 28, dockDoors: 24, trailerSpots: 115 },
-  { id: 'KNX-001', name: 'Knoxville Regional', location: 'Knoxville, TN', coordinates: { lat: 35.96, lng: -83.92 }, score: 74.1, status: 'online', trucksToday: 82, avgTurnTime: 27, dockDoors: 14, trailerSpots: 70 },
-  { id: 'GRN-001', name: 'Greenville DC', location: 'Greenville, SC', coordinates: { lat: 34.85, lng: -82.40 }, score: 80.6, status: 'online', trucksToday: 108, avgTurnTime: 24, dockDoors: 18, trailerSpots: 90 },
-  { id: 'MOB-001', name: 'Mobile Port Terminal', location: 'Mobile, AL', coordinates: { lat: 30.69, lng: -88.04 }, score: 76.3, status: 'online', trucksToday: 134, avgTurnTime: 26, dockDoors: 22, trailerSpots: 105 },
-  { id: 'PNS-001', name: 'Pensacola Crossdock', location: 'Pensacola, FL', coordinates: { lat: 30.42, lng: -87.22 }, score: 67.8, status: 'warning', trucksToday: 56, avgTurnTime: 33, dockDoors: 10, trailerSpots: 45 },
-  { id: 'LIT-001', name: 'Little Rock Hub', location: 'Little Rock, AR', coordinates: { lat: 34.75, lng: -92.29 }, score: 73.5, status: 'online', trucksToday: 89, avgTurnTime: 28, dockDoors: 16, trailerSpots: 80 },
-  { id: 'NOL-001', name: 'New Orleans Terminal', location: 'New Orleans, LA', coordinates: { lat: 29.95, lng: -90.07 }, score: 70.2, status: 'online', trucksToday: 145, avgTurnTime: 30, dockDoors: 24, trailerSpots: 120 },
-  { id: 'BTR-001', name: 'Baton Rouge DC', location: 'Baton Rouge, LA', coordinates: { lat: 30.45, lng: -91.15 }, score: 78.1, status: 'online', trucksToday: 97, avgTurnTime: 25, dockDoors: 18, trailerSpots: 85 },
+  { id: 'NWK-001', name: 'Newark Distribution', location: 'Newark, NJ', coordinates: { lat: 40.74, lng: -74.17 }, score: 67.2, status: 'warning', trucksToday: 234, avgTurnTime: 35, dockDoors: 38, trailerSpots: 180 },
+  { id: 'PHI-001', name: 'Philadelphia Hub', location: 'Philadelphia, PA', coordinates: { lat: 39.95, lng: -75.17 }, score: 74.5, status: 'online', trucksToday: 189, avgTurnTime: 28, dockDoors: 32, trailerSpots: 160 },
+  { id: 'PIT-001', name: 'Pittsburgh Regional', location: 'Pittsburgh, PA', coordinates: { lat: 40.44, lng: -80.00 }, score: 72.1, status: 'online', trucksToday: 87, avgTurnTime: 29, dockDoors: 16, trailerSpots: 75 },
+  { id: 'BOS-001', name: 'Boston Distribution', location: 'Boston, MA', coordinates: { lat: 42.36, lng: -71.06 }, score: 70.8, status: 'online', trucksToday: 112, avgTurnTime: 30, dockDoors: 20, trailerSpots: 95 },
+  { id: 'HAR-001', name: 'Hartford Regional', location: 'Hartford, CT', coordinates: { lat: 41.76, lng: -72.69 }, score: 76.4, status: 'online', trucksToday: 78, avgTurnTime: 26, dockDoors: 14, trailerSpots: 65 },
+  { id: 'BAL-001', name: 'Baltimore Port', location: 'Baltimore, MD', coordinates: { lat: 39.29, lng: -76.61 }, score: 79.6, status: 'online', trucksToday: 156, avgTurnTime: 25, dockDoors: 28, trailerSpots: 140 },
+  
+  // WEST REGION
+  { id: 'LAX-001', name: 'Los Angeles DC', location: 'Los Angeles, CA', coordinates: { lat: 34.05, lng: -118.24 }, score: 84.2, status: 'online', trucksToday: 298, avgTurnTime: 24, dockDoors: 48, trailerSpots: 290 },
+  { id: 'LAX-002', name: 'Long Beach Port', location: 'Long Beach, CA', coordinates: { lat: 33.77, lng: -118.19 }, score: 87.5, status: 'online', trucksToday: 345, avgTurnTime: 21, dockDoors: 56, trailerSpots: 340 },
+  { id: 'SFO-001', name: 'San Francisco Bay', location: 'Oakland, CA', coordinates: { lat: 37.80, lng: -122.27 }, score: 78.9, status: 'online', trucksToday: 167, avgTurnTime: 26, dockDoors: 30, trailerSpots: 150 },
+  { id: 'PHX-001', name: 'Phoenix Distribution', location: 'Phoenix, AZ', coordinates: { lat: 33.45, lng: -112.07 }, score: 81.3, status: 'online', trucksToday: 156, avgTurnTime: 24, dockDoors: 28, trailerSpots: 140 },
+  { id: 'DEN-001', name: 'Denver Hub', location: 'Denver, CO', coordinates: { lat: 39.74, lng: -104.99 }, score: 83.7, status: 'online', trucksToday: 134, avgTurnTime: 23, dockDoors: 24, trailerSpots: 125 },
+  { id: 'SLC-001', name: 'Salt Lake City DC', location: 'Salt Lake City, UT', coordinates: { lat: 40.76, lng: -111.89 }, score: 77.2, status: 'online', trucksToday: 89, avgTurnTime: 26, dockDoors: 18, trailerSpots: 85 },
+  { id: 'SEA-001', name: 'Seattle Distribution', location: 'Seattle, WA', coordinates: { lat: 47.61, lng: -122.33 }, score: 80.1, status: 'online', trucksToday: 145, avgTurnTime: 25, dockDoors: 26, trailerSpots: 130 },
+  { id: 'PDX-001', name: 'Portland Regional', location: 'Portland, OR', coordinates: { lat: 45.52, lng: -122.68 }, score: 76.8, status: 'online', trucksToday: 98, avgTurnTime: 27, dockDoors: 20, trailerSpots: 95 },
+  { id: 'LVG-001', name: 'Las Vegas Crossdock', location: 'Las Vegas, NV', coordinates: { lat: 36.17, lng: -115.14 }, score: 73.4, status: 'online', trucksToday: 112, avgTurnTime: 28, dockDoors: 22, trailerSpots: 105 },
+  { id: 'SAN-001', name: 'San Diego Hub', location: 'San Diego, CA', coordinates: { lat: 32.72, lng: -117.16 }, score: 79.5, status: 'online', trucksToday: 87, avgTurnTime: 25, dockDoors: 18, trailerSpots: 90 },
 ];
 
 const getScoreColor = (score: number): string => {

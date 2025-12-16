@@ -739,7 +739,7 @@ export default function YardMap() {
             transition: 'all 0.3s ease'
           }}
         >
-          🌐 Network (25 Sites)
+          🌐 Network (50 Plants)
         </button>
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
