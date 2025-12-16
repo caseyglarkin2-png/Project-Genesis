@@ -11,6 +11,7 @@ import CommandHeader from './CommandHeader';
 import TeamInvitation from './TeamInvitation';
 import ROICalculator from './ROICalculator';
 import NetworkMap from './NetworkMap';
+import AdoptionLeaderboard from './AdoptionLeaderboard';
 
 // MAPBOX TOKEN REQUIRED HERE
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -442,6 +443,7 @@ export default function YardMap() {
   const [showInvitation, setShowInvitation] = useState(false);
   const [showROI, setShowROI] = useState(false);
   const [showNetwork, setShowNetwork] = useState(false);
+  const [showAdoptionLeaderboard, setShowAdoptionLeaderboard] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [logoClicks, setLogoClicks] = useState(0);
   const [scoreData, setScoreData] = useState<ScoreData>({ 
@@ -739,7 +741,24 @@ export default function YardMap() {
             transition: 'all 0.3s ease'
           }}
         >
-          🌐 Network (250 Plants)
+          🌐 Primo Network
+        </button>
+        <button
+          onClick={() => setShowAdoptionLeaderboard(true)}
+          style={{
+            background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.1) 100%)',
+            border: '1px solid rgba(255, 215, 0, 0.4)',
+            color: '#ffd700',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: '"JetBrains Mono", monospace',
+            fontSize: '0.7rem',
+            letterSpacing: '1px',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          🏆 Leaderboard
         </button>
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
@@ -1093,6 +1112,11 @@ export default function YardMap() {
       {/* Network Map Modal */}
       {showNetwork && (
         <NetworkMap onClose={() => setShowNetwork(false)} />
+      )}
+      
+      {/* Adoption Leaderboard Modal */}
+      {showAdoptionLeaderboard && (
+        <AdoptionLeaderboard onClose={() => setShowAdoptionLeaderboard(false)} />
       )}
     </div>
   );
