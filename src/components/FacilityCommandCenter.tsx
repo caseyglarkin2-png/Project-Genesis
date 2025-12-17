@@ -340,8 +340,8 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                       <span style={{ color: '#10B981' }}>
                         {formatCurrency(facility.projectedAnnualROI)}/yr
                       </span>
-                      <span style={{ color: '#64748B' }}>
-                        YVS: {facility.yvsScore}
+                      <span style={{ color: '#F59E0B' }}>
+                        {facility.dockDoors || '?'} docks
                       </span>
                       <span style={{ color: '#64748B' }}>
                         {facility.trucksPerDay}/day
@@ -436,34 +436,34 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                 justifyContent: 'space-around'
               }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#3B82F6' }}>
-                    {selectedFacility.yvsScore}
-                  </div>
-                  <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase' }}>YVS Score</div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#10B981' }}>
-                    {selectedFacility.gateNodes}
+                    {selectedFacility.dockDoors || '—'}
                   </div>
-                  <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase' }}>Gates</div>
+                  <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase' }}>Dock Doors</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#F59E0B' }}>
-                    {selectedFacility.detectedTrailers}
+                    {selectedFacility.yardSpots || '—'}
                   </div>
-                  <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase' }}>Trailers</div>
+                  <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase' }}>Yard Spots</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#A855F7' }}>
-                    {selectedFacility.pavedAreaPct}%
+                  <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#3B82F6' }}>
+                    {selectedFacility.gateNodes}
                   </div>
-                  <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase' }}>Paved</div>
+                  <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase' }}>Gates</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#EC4899' }}>
                     {selectedFacility.trucksPerDay}
                   </div>
                   <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase' }}>Trucks/Day</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#A855F7' }}>
+                    {selectedFacility.yvsScore}
+                  </div>
+                  <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase' }}>YVS</div>
                 </div>
               </div>
             </div>
