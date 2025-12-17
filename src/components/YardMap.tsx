@@ -13,7 +13,8 @@ import ROICalculator from './ROICalculator';
 import NetworkMap from './NetworkMap';
 import AdoptionLeaderboard from './AdoptionLeaderboard';
 import NorthAmericaMap from './NorthAmericaMap';
-import { getNetworkStats, PRIMO_FACILITIES } from '../data/primo-facilities';
+import SatelliteRecon from './SatelliteRecon';
+import { getNetworkStats, PRIMO_FACILITIES, PrimoFacility } from '../data/primo-facilities';
 
 // MAPBOX TOKEN REQUIRED HERE
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -440,7 +441,8 @@ export default function YardMap() {
   const [showAdoptionLeaderboard, setShowAdoptionLeaderboard] = useState(false);
   const [showNorthAmericaMap, setShowNorthAmericaMap] = useState(false);
   const [showFacilitySelector, setShowFacilitySelector] = useState(false);
-  const [selectedFacility, setSelectedFacility] = useState(PRIMO_FACILITIES[0]); // Default to first facility
+  const [showSatelliteRecon, setShowSatelliteRecon] = useState(false);
+  const [selectedFacility, setSelectedFacility] = useState<PrimoFacility>(PRIMO_FACILITIES[0]); // Default to first facility
   const [soundEnabled, setSoundEnabled] = useState(false); // Off by default - user must enable
   const [logoClicks, setLogoClicks] = useState(0);
   const [scoreData, setScoreData] = useState<ScoreData>({ 
@@ -1475,6 +1477,30 @@ export default function YardMap() {
               🎯 Toggle 3D
             </button>
           </div>
+          
+          {/* Satellite Recon Button */}
+          <button
+            onClick={() => setShowSatelliteRecon(true)}
+            style={{
+              width: '100%',
+              marginTop: '10px',
+              padding: '10px 16px',
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))',
+              border: '1px solid rgba(59, 130, 246, 0.4)',
+              borderRadius: '8px',
+              color: '#60A5FA',
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            🛰️ SATELLITE RECON
+          </button>
         </div>
       )}
       
@@ -1490,12 +1516,37 @@ export default function YardMap() {
       
       {/* North America Map Modal */}
       {showNorthAmericaMap && (
-        <NorthAmericaMap onClose={() => setShowNorthAmericaMap(false)} />
+        <NorthAmericaMap 
+          onClose={() => setShowNorthAmericaMap(false)} 
+          onZoomToFacility={(facility) => {
+            // Close the NA map and zoom to the facility's satellite view
+            setShowNorthAmericaMap(false);
+            setSelectedFacility(facility);
+            setViewState({
+              longitude: facility.coordinates.lng,
+              latitude: facility.coordinates.lat,
+              zoom: 18,
+              pitch: 45
+            });
+          }}
+        />
       )}
       
       {/* Adoption Leaderboard Modal */}
       {showAdoptionLeaderboard && (
         <AdoptionLeaderboard onClose={() => setShowAdoptionLeaderboard(false)} />
+      )}
+      
+      {/* Satellite Recon Modal */}
+      {showSatelliteRecon && selectedFacility && (
+        <SatelliteRecon 
+          facility={selectedFacility}
+          onClose={() => setShowSatelliteRecon(false)}
+          onAcceptMapping={(detections) => {
+            console.log('Mapping accepted with', detections.length, 'detections');
+            // Future: Save detections to facility data
+          }}
+        />
       )}
     </div>
   );

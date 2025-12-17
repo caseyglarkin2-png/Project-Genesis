@@ -90,7 +90,7 @@ const FacilityMarker: React.FC<FacilityMarkerProps> = ({ facility, isSelected, o
   );
 };
 
-export default function NorthAmericaMap({ onClose }: { onClose: () => void }) {
+export default function NorthAmericaMap({ onClose, onZoomToFacility }: { onClose: () => void; onZoomToFacility?: (facility: PrimoFacility) => void }) {
   const [viewState, setViewState] = useState({
     longitude: -98.5,
     latitude: 39.8,
@@ -659,6 +659,43 @@ export default function NorthAmericaMap({ onClose }: { onClose: () => void }) {
                         </div>
                       </div>
                     )}
+                    
+                    {/* Satellite Recon Button */}
+                    <button
+                      onClick={() => {
+                        if (onZoomToFacility) {
+                          onZoomToFacility(selectedFacility);
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        marginTop: '12px',
+                        padding: '10px 16px',
+                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))',
+                        border: '1px solid rgba(59, 130, 246, 0.4)',
+                        borderRadius: '8px',
+                        color: '#60A5FA',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))';
+                        e.currentTarget.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.3)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      🛰️ SATELLITE RECON
+                      <span style={{ fontSize: '0.6rem', opacity: 0.7 }}>→</span>
+                    </button>
                   </div>
                 </Popup>
               )}
