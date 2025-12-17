@@ -166,7 +166,7 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
     };
   }, []);
 
-  // Calculate facility-specific metrics
+  // Calculate facility-specific metrics with detailed ROI breakdown
   const facilityMetrics = useMemo(() => {
     const f = selectedFacility;
     const implementationCost = 48000;
@@ -177,11 +177,34 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
     const roiPriority = f.projectedAnnualROI >= ROI_THRESHOLDS.high ? 'HIGH' :
                         f.projectedAnnualROI >= ROI_THRESHOLDS.medium ? 'MEDIUM' : 'STANDARD';
     
+    // Detailed ROI breakdown (Phiroz methodology)
+    // Detention savings = dock doors * avg detention cost reduction
+    const avgDetentionPerDoor = f.hasYMS ? 0 : Math.round(f.monthlyDetentionSavings / Math.max(f.dockDoors, 1));
+    
+    // Labor savings = reduced ghost searches + paperwork elimination
+    const laborPerTruck = f.hasYMS ? 0 : Math.round((f.monthlyLaborSavings * 12) / (f.trucksPerDay * 365));
+    
+    // Yard efficiency gain from spot visibility
+    const yardEfficiencyGain = f.hasYMS ? 0 : Math.round(f.yardSpots * 2.5 * 12); // ~$2.50/spot/month
+    
+    // Turn time value = faster turns = more capacity
+    const turnTimeValue = f.hasYMS ? 0 : Math.round((f.turnTimeImprovement / 100) * f.trucksPerDay * 15 * 260); // $15/turn saved * days/year
+    
     return {
       paybackMonths,
       roiPriority,
       dailySavings: Math.round((f.monthlyDetentionSavings + f.monthlyLaborSavings) / 30),
       capacityUtilization: Math.round((f.detectedTrailers / (f.trucksPerDay * 0.8)) * 100),
+      // ROI components
+      detentionROI: f.monthlyDetentionSavings * 12,
+      laborROI: f.monthlyLaborSavings * 12,
+      avgDetentionPerDoor,
+      laborPerTruck,
+      yardEfficiencyGain,
+      turnTimeValue,
+      // Door economics
+      costPerDoor: Math.round(implementationCost / f.dockDoors),
+      savingsPerDoor: Math.round(f.projectedAnnualROI / f.dockDoors),
     };
   }, [selectedFacility]);
 
@@ -1046,6 +1069,53 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                     {formatCurrency(facilityMetrics.dailySavings)}
                   </div>
                   <div style={{ fontSize: '0.55rem', color: '#64748B' }}>Daily Savings</div>
+                </div>
+              </div>
+              
+              {/* Per-Door Economics - The Phiroz Metric */}
+              <div style={{
+                marginTop: '12px',
+                padding: '12px',
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+                borderRadius: '8px'
+              }}>
+                <div style={{ 
+                  fontSize: '0.6rem', 
+                  color: '#60A5FA', 
+                  fontWeight: '600',
+                  marginBottom: '8px'
+                }}>
+                  🚪 PER-DOOR ECONOMICS
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>Implementation Cost</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '600', color: '#EF4444' }}>
+                    {formatCurrency(facilityMetrics.costPerDoor)}/door
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>Annual Return</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: '600', color: '#10B981' }}>
+                    {formatCurrency(facilityMetrics.savingsPerDoor)}/door
+                  </span>
+                </div>
+                <div style={{ 
+                  marginTop: '8px', 
+                  paddingTop: '8px', 
+                  borderTop: '1px solid rgba(59, 130, 246, 0.15)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>ROI per Door</span>
+                  <span style={{ 
+                    fontSize: '0.85rem', 
+                    fontWeight: '700', 
+                    color: facilityMetrics.savingsPerDoor > facilityMetrics.costPerDoor ? '#10B981' : '#F59E0B' 
+                  }}>
+                    {((facilityMetrics.savingsPerDoor / facilityMetrics.costPerDoor) * 100).toFixed(0)}%
+                  </span>
                 </div>
               </div>
             </div>
