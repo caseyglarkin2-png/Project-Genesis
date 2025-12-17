@@ -110,11 +110,11 @@ export default function SatelliteAnalysisPanel({
       const row = Math.floor(i / 5);
       const col = i % 5;
       mockDockDoors.push({
-        idanalysisCenter.lng + (col - 2) * 0.00015,
-          analysisCenter
+        id: `trailer-${i}`,
+        type: 'trailer',
         coordinates: [
-          facility.coordinates.lng + (col - 2) * 0.00015,
-          facility.coordinates.lat - 0.0005 - row * 0.0002
+          analysisCenter.lng + (col - 2) * 0.00015,
+          analysisCenter.lat - 0.0005 - row * 0.0002
         ],
         label: `Trailer ${i + 1}`
       });
