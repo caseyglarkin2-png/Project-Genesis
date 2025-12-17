@@ -769,7 +769,7 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
                   <div>
                     <span style={{ color: '#64748B', fontSize: '0.6rem' }}>Payback: </span>
                     <span style={{ color: '#3B82F6', fontSize: '0.75rem', fontWeight: '600' }}>
-                      {facilityROI.paybackMonths < 12 ? `${facilityROI.paybackMonths} months` : '< 1 month'}
+                      {facilityROI.paybackMonths <= 1 ? '< 1 month' : `${facilityROI.paybackMonths} months`}
                     </span>
                   </div>
                   <div>

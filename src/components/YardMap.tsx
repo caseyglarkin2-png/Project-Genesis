@@ -20,62 +20,54 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 // Default to the live Render backend if the environment variable is not set
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://project-genesis-backend-8uk2.onrender.com';
 
-// --- Sound System ---
-let audioContext: AudioContext | null = null;
+// --- Voice Announcement System ---
+// Uses browser Speech Synthesis for meaningful yard activity announcements
 
-const playSound = (type: string) => {
+const speak = (message: string) => {
   try {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    const ctx = audioContext;
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    const now = ctx.currentTime;
-    const volume = 0.2;
-
-    switch (type) {
-      case 'truckArrival':
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(80, now);
-        oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.3);
-        gainNode.gain.setValueAtTime(volume, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-        oscillator.start(now);
-        oscillator.stop(now + 0.4);
-        break;
-      case 'truckDeparture':
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(400, now);
-        oscillator.frequency.exponentialRampToValueAtTime(80, now + 0.5);
-        gainNode.gain.setValueAtTime(volume * 0.8, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-        oscillator.start(now);
-        oscillator.stop(now + 0.5);
-        break;
-      case 'dockAssign':
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(440, now);
-        oscillator.frequency.setValueAtTime(660, now + 0.1);
-        gainNode.gain.setValueAtTime(volume * 0.5, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-        oscillator.start(now);
-        oscillator.stop(now + 0.2);
-        break;
-      case 'notification':
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, now);
-        oscillator.frequency.exponentialRampToValueAtTime(440, now + 0.15);
-        gainNode.gain.setValueAtTime(volume * 0.5, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-        oscillator.start(now);
-        oscillator.stop(now + 0.2);
-        break;
+    if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.rate = 1.1; // Slightly faster
+      utterance.pitch = 1.0;
+      utterance.volume = 0.8;
+      
+      // Try to get a professional-sounding voice
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(v => 
+        v.name.includes('Google') || 
+        v.name.includes('Microsoft') || 
+        v.name.includes('Samantha') ||
+        v.lang === 'en-US'
+      );
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
+      window.speechSynthesis.speak(utterance);
     }
   } catch (e) {
-    // Silent fail if audio not available
+    // Silent fail if speech not available
+  }
+};
+
+// Map event types to voice announcements
+const playSound = (type: string, details?: string) => {
+  switch (type) {
+    case 'truckArrival':
+      speak(details || 'Truck arrival detected');
+      break;
+    case 'truckDeparture':
+      speak(details || 'Truck departure confirmed');
+      break;
+    case 'dockAssign':
+      speak(details || 'Dock assignment complete');
+      break;
+    case 'notification':
+      speak(details || 'Yard activity update');
+      break;
   }
 };
 
@@ -449,7 +441,7 @@ export default function YardMap() {
   const [showNorthAmericaMap, setShowNorthAmericaMap] = useState(false);
   const [showFacilitySelector, setShowFacilitySelector] = useState(false);
   const [selectedFacility, setSelectedFacility] = useState(PRIMO_FACILITIES[0]); // Default to first facility
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false); // Off by default - user must enable
   const [logoClicks, setLogoClicks] = useState(0);
   const [scoreData, setScoreData] = useState<ScoreData>({ 
     score: 0, 
@@ -473,26 +465,32 @@ export default function YardMap() {
   // Simulate live activity feed
   useEffect(() => {
     const events = [
-      { text: '🚛 TRL-{ID} arrived', color: '#00ff00', sound: 'truckArrival' },
-      { text: '🚪 Dock {DOCK} assigned', color: '#00ffff', sound: 'dockAssign' },
-      { text: '📦 Load verified at Dock {DOCK}', color: '#ffff00', sound: 'notification' },
-      { text: '✓ TRL-{ID} departed', color: '#00ff00', sound: 'truckDeparture' },
-      { text: '⚠ Yard check initiated', color: '#ff6600', sound: 'notification' },
+      { text: '🚛 TRL-{ID} arrived', color: '#00ff00', sound: 'truckArrival', speech: 'Trailer {ID} has arrived at the yard' },
+      { text: '🚪 Dock {DOCK} assigned', color: '#00ffff', sound: 'dockAssign', speech: 'Dock {DOCK} has been assigned' },
+      { text: '📦 Load verified at Dock {DOCK}', color: '#ffff00', sound: 'notification', speech: 'Load verified at dock {DOCK}' },
+      { text: '✓ TRL-{ID} departed', color: '#00ff00', sound: 'truckDeparture', speech: 'Trailer {ID} has departed' },
+      { text: '⚠ Yard check initiated', color: '#ff6600', sound: 'notification', speech: 'Yard check initiated' },
     ];
 
     const interval = setInterval(() => {
       const event = events[Math.floor(Math.random() * events.length)];
+      const trailerId = String(10000 + Math.floor(Math.random() * 90000));
+      const dockNum = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+      
       const newEvent = {
         id: Date.now(),
         text: event.text
-          .replace('{ID}', String(10000 + Math.floor(Math.random() * 90000)))
-          .replace('{DOCK}', String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')),
+          .replace('{ID}', trailerId)
+          .replace('{DOCK}', dockNum),
         time: 'now',
         color: event.color,
       };
       
       if (soundEnabled) {
-        playSound(event.sound);
+        const speechText = event.speech
+          .replace('{ID}', trailerId)
+          .replace('{DOCK}', dockNum);
+        playSound(event.sound, speechText);
       }
       
       setActivityLog(prev => [newEvent, ...prev.slice(0, 3)]);
