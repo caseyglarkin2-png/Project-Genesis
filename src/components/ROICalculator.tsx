@@ -69,14 +69,22 @@ const TOOLTIPS: Record<string, string> = {
   searchTimeMinutes: "Average time spent per ghost search before the asset is found or declared missing. Typical: 15-45 minutes.",
 };
 
-// Improvement assumptions (conservative, based on customer data)
-const ASSUMPTIONS = {
-  turnTimeReduction: 0.25,      // 25% turn time reduction
-  detentionRateReduction: 0.40, // 40% reduction in detention incidents
-  yardCheckReduction: 0.60,     // 60% fewer manual yard checks
-  ghostReduction: 0.80,         // 80% reduction in ghost searches
+// Default improvement assumptions (conservative, based on customer data)
+const DEFAULT_ASSUMPTIONS = {
+  turnTimeReduction: 25,        // 25% turn time reduction
+  detentionRateReduction: 40,   // 40% reduction in detention incidents
+  yardCheckReduction: 60,       // 60% fewer manual yard checks
+  ghostReduction: 80,           // 80% reduction in ghost searches
   minutesPerYardCheck: 30,      // 30 min per manual yard check
 };
+
+interface Assumptions {
+  turnTimeReduction: number;
+  detentionRateReduction: number;
+  yardCheckReduction: number;
+  ghostReduction: number;
+  minutesPerYardCheck: number;
+}
 
 const IMPLEMENTATION_COST = 48000; // Annual subscription
 
@@ -92,7 +100,7 @@ const DEFAULT_FACILITY: ROIInputs = {
   searchTimeMinutes: 30,
 };
 
-function calculateROI(inputs: ROIInputs): ROIResults {
+function calculateROI(inputs: ROIInputs, assumptions: Assumptions): ROIResults {
   // ============================================
   // DETENTION SAVINGS
   // ============================================
@@ -104,10 +112,10 @@ function calculateROI(inputs: ROIInputs): ROIResults {
   const avgDetentionMinutes = Math.max(0, inputs.avgTurnTime - inputs.detentionThreshold);
   const currentDetentionHoursPerDay = (detentionLoadsPerDay * avgDetentionMinutes) / 60;
   
-  // With FreightRoll: 25% faster turns + 40% fewer detention incidents
-  const improvedTurnTime = inputs.avgTurnTime * (1 - ASSUMPTIONS.turnTimeReduction);
+  // With FreightRoll: Apply custom assumption percentages
+  const improvedTurnTime = inputs.avgTurnTime * (1 - assumptions.turnTimeReduction / 100);
   const improvedDetentionMinutes = Math.max(0, improvedTurnTime - inputs.detentionThreshold);
-  const improvedDetentionRate = inputs.detentionRate * (1 - ASSUMPTIONS.detentionRateReduction);
+  const improvedDetentionRate = inputs.detentionRate * (1 - assumptions.detentionRateReduction / 100);
   const improvedDetentionLoadsPerDay = (inputs.loadsPerDay * improvedDetentionRate) / 100;
   const projectedDetentionHoursPerDay = (improvedDetentionLoadsPerDay * improvedDetentionMinutes) / 60;
   
@@ -117,21 +125,21 @@ function calculateROI(inputs: ROIInputs): ROIResults {
   // ============================================
   // LABOR SAVINGS (Yard Checks)
   // ============================================
-  const checksEliminated = inputs.yardChecksPerDay * ASSUMPTIONS.yardCheckReduction;
-  const laborHoursSavedPerDay = (checksEliminated * ASSUMPTIONS.minutesPerYardCheck) / 60;
+  const checksEliminated = inputs.yardChecksPerDay * (assumptions.yardCheckReduction / 100);
+  const laborHoursSavedPerDay = (checksEliminated * assumptions.minutesPerYardCheck) / 60;
   const annualLaborSavings = laborHoursSavedPerDay * inputs.laborCostPerHour * 365;
 
   // ============================================
   // GHOST SEARCH SAVINGS
   // ============================================
-  const searchesEliminated = inputs.ghostSearchesPerWeek * ASSUMPTIONS.ghostReduction;
+  const searchesEliminated = inputs.ghostSearchesPerWeek * (assumptions.ghostReduction / 100);
   const searchHoursSavedPerWeek = (searchesEliminated * inputs.searchTimeMinutes) / 60;
   const annualGhostSavings = searchHoursSavedPerWeek * inputs.laborCostPerHour * 52;
 
   // ============================================
   // THROUGHPUT & TOTALS
   // ============================================
-  const throughputIncrease = Math.round(ASSUMPTIONS.turnTimeReduction * 100);
+  const throughputIncrease = Math.round(assumptions.turnTimeReduction);
   const totalAnnualROI = annualDetentionSavings + annualLaborSavings + annualGhostSavings;
   const paybackMonths = totalAnnualROI > 0 ? Math.round((IMPLEMENTATION_COST / totalAnnualROI) * 12) : 99;
   const savingsPerLoad = totalAnnualROI / (inputs.loadsPerDay * 365);
@@ -207,12 +215,70 @@ function Tooltip({ text }: { text: string }) {
   );
 }
 
+// Slider component for assumptions
+function AssumptionSlider({ 
+  label, 
+  value, 
+  onChange, 
+  min = 0, 
+  max = 100,
+  color,
+  description
+}: { 
+  label: string; 
+  value: number; 
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  color: string;
+  description: string;
+}) {
+  return (
+    <div style={{
+      background: 'rgba(30, 41, 59, 0.4)',
+      padding: '12px 14px',
+      borderRadius: '8px',
+      borderLeft: `3px solid ${color}`
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+        <span style={{ color: '#CBD5E1', fontSize: '0.7rem', fontWeight: '500' }}>{label}</span>
+        <span style={{ 
+          color: color, 
+          fontWeight: '700', 
+          fontSize: '0.9rem',
+          background: `${color}15`,
+          padding: '2px 8px',
+          borderRadius: '4px'
+        }}>{value}%</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        style={{
+          width: '100%',
+          height: '6px',
+          borderRadius: '3px',
+          background: `linear-gradient(to right, ${color} 0%, ${color} ${value}%, rgba(100,116,139,0.3) ${value}%, rgba(100,116,139,0.3) 100%)`,
+          appearance: 'none',
+          cursor: 'pointer',
+          outline: 'none'
+        }}
+      />
+      <div style={{ color: '#64748B', fontSize: '0.55rem', marginTop: '4px' }}>{description}</div>
+    </div>
+  );
+}
+
 export default function ROICalculator({ onClose }: { onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'facility' | 'network' | 'methodology'>('facility');
   const [inputs, setInputs] = useState<ROIInputs>(DEFAULT_FACILITY);
+  const [assumptions, setAssumptions] = useState<Assumptions>(DEFAULT_ASSUMPTIONS);
   const [networkSize, setNetworkSize] = useState(25);
   
-  const facilityROI = calculateROI(inputs);
+  const facilityROI = calculateROI(inputs, assumptions);
   const networkROI = {
     ...facilityROI,
     annualDetentionSavings: facilityROI.annualDetentionSavings * networkSize,
@@ -220,6 +286,8 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
     annualGhostSavings: facilityROI.annualGhostSavings * networkSize,
     totalAnnualROI: facilityROI.totalAnnualROI * networkSize,
   };
+
+  const resetAssumptions = () => setAssumptions(DEFAULT_ASSUMPTIONS);
 
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
@@ -406,26 +474,54 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
                 ▲ Core Assumptions
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {[
-                  { label: 'Turn Time Reduction', value: '25%', desc: 'Average improvement in gate-to-gate time' },
-                  { label: 'Detention Rate Reduction', value: '40%', desc: 'Fewer loads exceeding free time threshold' },
-                  { label: 'Yard Check Reduction', value: '60%', desc: 'Fewer manual audits needed with real-time visibility' },
-                  { label: 'Ghost Search Reduction', value: '80%', desc: 'Near-elimination of lost asset hunts' },
-                ].map(item => (
-                  <div key={item.label} style={{
-                    background: 'rgba(30, 41, 59, 0.4)',
-                    padding: '12px',
-                    borderRadius: '6px',
-                    borderLeft: '3px solid #F59E0B'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ color: '#CBD5E1', fontSize: '0.7rem' }}>{item.label}</span>
-                      <span style={{ color: '#10B981', fontWeight: '600', fontSize: '0.85rem' }}>{item.value}</span>
-                    </div>
-                    <div style={{ color: '#64748B', fontSize: '0.6rem', marginTop: '4px' }}>{item.desc}</div>
-                  </div>
-                ))}
+                <AssumptionSlider
+                  label="Turn Time Reduction"
+                  value={assumptions.turnTimeReduction}
+                  onChange={(v) => setAssumptions({ ...assumptions, turnTimeReduction: v })}
+                  color="#10B981"
+                  description="Average improvement in gate-to-gate time"
+                  max={50}
+                />
+                <AssumptionSlider
+                  label="Detention Rate Reduction"
+                  value={assumptions.detentionRateReduction}
+                  onChange={(v) => setAssumptions({ ...assumptions, detentionRateReduction: v })}
+                  color="#F59E0B"
+                  description="Fewer loads exceeding free time threshold"
+                  max={80}
+                />
+                <AssumptionSlider
+                  label="Yard Check Reduction"
+                  value={assumptions.yardCheckReduction}
+                  onChange={(v) => setAssumptions({ ...assumptions, yardCheckReduction: v })}
+                  color="#3B82F6"
+                  description="Fewer manual audits with real-time visibility"
+                  max={90}
+                />
+                <AssumptionSlider
+                  label="Ghost Search Reduction"
+                  value={assumptions.ghostReduction}
+                  onChange={(v) => setAssumptions({ ...assumptions, ghostReduction: v })}
+                  color="#8B5CF6"
+                  description="Near-elimination of lost asset hunts"
+                  max={100}
+                />
               </div>
+              <button
+                onClick={resetAssumptions}
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  background: 'transparent',
+                  border: '1px dashed rgba(100, 116, 139, 0.4)',
+                  borderRadius: '6px',
+                  color: '#64748B',
+                  fontSize: '0.6rem',
+                  cursor: 'pointer'
+                }}
+              >
+                ↺ Reset to Defaults
+              </button>
             </div>
 
             {/* Formulas */}
@@ -459,11 +555,11 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
                       (Loads × Detention Rate) × max(0, Avg Turn Time − Threshold) ÷ 60
                     </div>
                     <div style={{ marginTop: '8px' }}>With FreightRoll:</div>
-                    <div style={{ paddingLeft: '12px', color: '#94A3B8' }}>
-                      • Turn time reduced by 25%
+                    <div style={{ paddingLeft: '12px', color: '#10B981' }}>
+                      • Turn time reduced by <strong>{assumptions.turnTimeReduction}%</strong>
                     </div>
-                    <div style={{ paddingLeft: '12px', color: '#94A3B8' }}>
-                      • Detention incidents reduced by 40%
+                    <div style={{ paddingLeft: '12px', color: '#F59E0B' }}>
+                      • Detention incidents reduced by <strong>{assumptions.detentionRateReduction}%</strong>
                     </div>
                     <div style={{ marginTop: '8px' }}>Annual Savings = Hours Saved × $/Hour × 365</div>
                   </div>
@@ -488,7 +584,7 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
                     borderRadius: '4px',
                     lineHeight: '1.8'
                   }}>
-                    <div>Checks Eliminated = Checks/Day × 60% reduction</div>
+                    <div>Checks Eliminated = Checks/Day × <span style={{ color: '#3B82F6' }}><strong>{assumptions.yardCheckReduction}%</strong></span> reduction</div>
                     <div>Hours Saved/Day = Checks Eliminated × 30 min ÷ 60</div>
                     <div>Annual Savings = Hours Saved × Labor Rate × 365</div>
                   </div>
@@ -513,7 +609,7 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
                     borderRadius: '4px',
                     lineHeight: '1.8'
                   }}>
-                    <div>Searches Eliminated = Searches/Week × 80% reduction</div>
+                    <div>Searches Eliminated = Searches/Week × <span style={{ color: '#8B5CF6' }}><strong>{assumptions.ghostReduction}%</strong></span> reduction</div>
                     <div>Hours Saved/Week = Searches Eliminated × Search Time ÷ 60</div>
                     <div>Annual Savings = Hours Saved × Labor Rate × 52 weeks</div>
                   </div>
@@ -796,10 +892,10 @@ export default function ROICalculator({ onClose }: { onClose: () => void }) {
           color: '#64748B'
         }}>
           <span>
-            Assumptions: 25% turn time ↓ · 40% detention rate ↓ · 60% yard checks ↓ · 80% ghost searches ↓
+            Current: <span style={{ color: '#10B981' }}>{assumptions.turnTimeReduction}%</span> turn time ↓ · <span style={{ color: '#F59E0B' }}>{assumptions.detentionRateReduction}%</span> detention ↓ · <span style={{ color: '#3B82F6' }}>{assumptions.yardCheckReduction}%</span> yard checks ↓ · <span style={{ color: '#8B5CF6' }}>{assumptions.ghostReduction}%</span> ghost ↓
           </span>
           <span style={{ color: '#3B82F6' }}>
-            Based on FreightRoll deployment data
+            Adjust in "How It's Calculated" tab
           </span>
         </div>
       </div>
