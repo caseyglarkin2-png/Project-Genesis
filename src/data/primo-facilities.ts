@@ -246,7 +246,7 @@ export const PRIMO_FACILITIES: PrimoFacility[] = [
     location: 'Mecosta, MI',
     state: 'MI',
     country: 'US',
-    coordinates: { lat: 43.6191, lng: -85.2311 },
+    coordinates: { lat: 43.5731, lng: -85.4128 },
     yvsScore: 94.2,
     hasYES: true,
     hasYMS: true,
