@@ -5,6 +5,7 @@ import { PRIMO_FACILITIES, PrimoFacility, getNetworkStats, calculateRiskProfile,
 import YardOperationsView from './YardOperationsView';
 import RiskCompetitivePanel from './RiskCompetitivePanel';
 import CoordinateValidatorPanel from './CoordinateValidatorPanel';
+import SatelliteAnalysisPanel from './SatelliteAnalysisPanel';
 
 /**
  * =============================================================================
@@ -68,6 +69,7 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
   const [showYardOps, setShowYardOps] = useState(false);
   const [showRiskPanel, setShowRiskPanel] = useState(false);
   const [showCoordValidator, setShowCoordValidator] = useState(false);
+  const [showSatelliteAnalysis, setShowSatelliteAnalysis] = useState(false);
   const [mapStyle, setMapStyle] = useState<'satellite' | 'streets' | 'dark'>('satellite');
   
   const stats = useMemo(() => getNetworkStats(), []);
@@ -1000,37 +1002,63 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                 top: '16px',
                 right: '16px',
                 display: 'flex',
-                background: 'rgba(10, 15, 25, 0.95)',
-                border: '1px solid rgba(59, 130, 246, 0.3)',
-                borderRadius: '8px',
-                padding: '4px',
-                gap: '4px'
+                flexDirection: 'column',
+                gap: '8px'
               }}>
-                {[
-                  { id: 'satellite', label: '🛰️ Satellite', icon: '🛰️' },
-                  { id: 'streets', label: '🗺️ Streets', icon: '🗺️' },
-                  { id: 'dark', label: '🌙 Dark', icon: '🌙' }
-                ].map(style => (
-                  <button
-                    key={style.id}
-                    onClick={() => setMapStyle(style.id as typeof mapStyle)}
-                    style={{
-                      padding: '6px 10px',
-                      background: mapStyle === style.id ? 'rgba(59, 130, 246, 0.3)' : 'transparent',
-                      border: 'none',
-                      borderRadius: '6px',
-                      color: mapStyle === style.id ? '#60A5FA' : '#64748B',
-                      fontSize: '0.65rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    {style.icon}
-                  </button>
-                ))}
+                <div style={{
+                  display: 'flex',
+                  background: 'rgba(10, 15, 25, 0.95)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  borderRadius: '8px',
+                  padding: '4px',
+                  gap: '4px'
+                }}>
+                  {[
+                    { id: 'satellite', label: '🛰️ Satellite', icon: '🛰️' },
+                    { id: 'streets', label: '🗺️ Streets', icon: '🗺️' },
+                    { id: 'dark', label: '🌙 Dark', icon: '🌙' }
+                  ].map(style => (
+                    <button
+                      key={style.id}
+                      onClick={() => setMapStyle(style.id as typeof mapStyle)}
+                      style={{
+                        padding: '6px 10px',
+                        background: mapStyle === style.id ? 'rgba(59, 130, 246, 0.3)' : 'transparent',
+                        border: 'none',
+                        borderRadius: '6px',
+                        color: mapStyle === style.id ? '#60A5FA' : '#64748B',
+                        fontSize: '0.65rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      {style.icon}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Satellite Analysis Button */}
+                <button
+                  onClick={() => setShowSatelliteAnalysis(true)}
+                  style={{
+                    padding: '8px 12px',
+                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(99, 102, 241, 0.3))',
+                    border: '1px solid rgba(139, 92, 246, 0.5)',
+                    borderRadius: '8px',
+                    color: '#A855F7',
+                    fontSize: '0.7rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  🔬 Analyze Facility
+                </button>
               </div>
               
               {/* Facility Name Overlay */}
@@ -1502,6 +1530,14 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
             setShowCoordValidator(false);
           }}
           onClose={() => setShowCoordValidator(false)}
+        />
+      )}
+      
+      {/* Satellite Analysis Panel */}
+      {showSatelliteAnalysis && (
+        <SatelliteAnalysisPanel
+          facility={selectedFacility}
+          onClose={() => setShowSatelliteAnalysis(false)}
         />
       )}
     </>
