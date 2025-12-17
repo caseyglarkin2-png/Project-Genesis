@@ -498,7 +498,7 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                   border: '1px solid rgba(16, 185, 129, 0.3)',
                   borderRadius: '12px',
                   padding: '16px',
-                  minWidth: '280px'
+                  minWidth: '320px'
                 }}>
                   <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>
                     Wave Details
@@ -509,25 +509,76 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                   {(() => {
                     const wave = deploymentWaves.find(w => w.region === selectedWave);
                     if (!wave) return null;
+                    const waveIndex = deploymentWaves.findIndex(w => w.region === selectedWave);
+                    // Calculate projected timeline based on wave priority
+                    const weeksPerWave = Math.ceil(wave.count / 5); // 5 facilities/week capacity
+                    const cumulativeWeeks = deploymentWaves
+                      .slice(0, waveIndex)
+                      .reduce((sum, w) => sum + Math.ceil(w.count / 5), 0);
+                    const startWeek = cumulativeWeeks + 1;
+                    const endWeek = startWeek + weeksPerWave - 1;
+                    
+                    // Calculate projected dates
+                    const today = new Date();
+                    const startDate = new Date(today.getTime() + (startWeek * 7 * 24 * 60 * 60 * 1000));
+                    const endDate = new Date(today.getTime() + (endWeek * 7 * 24 * 60 * 60 * 1000));
+                    const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    
                     return (
-                      <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '8px', borderRadius: '6px' }}>
-                          <div style={{ fontSize: '1rem', fontWeight: '700', color: '#10B981' }}>{wave.count}</div>
-                          <div style={{ fontSize: '0.6rem', color: '#64748B' }}>Facilities</div>
+                      <>
+                        <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                            <div style={{ fontSize: '1rem', fontWeight: '700', color: '#10B981' }}>{wave.count}</div>
+                            <div style={{ fontSize: '0.6rem', color: '#64748B' }}>Facilities</div>
+                          </div>
+                          <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                            <div style={{ fontSize: '1rem', fontWeight: '700', color: '#3B82F6' }}>{wave.totalDockDoors}</div>
+                            <div style={{ fontSize: '0.6rem', color: '#64748B' }}>Dock Doors</div>
+                          </div>
+                          <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                            <div style={{ fontSize: '1rem', fontWeight: '700', color: '#F59E0B' }}>{formatCurrency(wave.totalROI)}</div>
+                            <div style={{ fontSize: '0.6rem', color: '#64748B' }}>Wave ROI</div>
+                          </div>
+                          <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                            <div style={{ fontSize: '1rem', fontWeight: '700', color: '#A855F7' }}>{wave.roiPerDollar.toFixed(1)}x</div>
+                            <div style={{ fontSize: '0.6rem', color: '#64748B' }}>ROI/$ Spent</div>
+                          </div>
                         </div>
-                        <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '8px', borderRadius: '6px' }}>
-                          <div style={{ fontSize: '1rem', fontWeight: '700', color: '#3B82F6' }}>{wave.totalDockDoors}</div>
-                          <div style={{ fontSize: '0.6rem', color: '#64748B' }}>Dock Doors</div>
+                        
+                        {/* Projected Timeline */}
+                        <div style={{
+                          marginTop: '12px',
+                          padding: '10px',
+                          background: 'rgba(59, 130, 246, 0.1)',
+                          border: '1px solid rgba(59, 130, 246, 0.2)',
+                          borderRadius: '8px'
+                        }}>
+                          <div style={{ fontSize: '0.6rem', color: '#60A5FA', fontWeight: '600', marginBottom: '6px' }}>
+                            📅 PROJECTED TIMELINE
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <div style={{ fontSize: '0.55rem', color: '#64748B' }}>Start</div>
+                              <div style={{ fontSize: '0.8rem', fontWeight: '600', color: '#E2E8F0' }}>
+                                {formatDate(startDate)}
+                              </div>
+                            </div>
+                            <div style={{ color: '#64748B', fontSize: '1rem' }}>→</div>
+                            <div>
+                              <div style={{ fontSize: '0.55rem', color: '#64748B' }}>Complete</div>
+                              <div style={{ fontSize: '0.8rem', fontWeight: '600', color: '#10B981' }}>
+                                {formatDate(endDate)}
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '0.55rem', color: '#64748B' }}>Duration</div>
+                              <div style={{ fontSize: '0.8rem', fontWeight: '600', color: '#F59E0B' }}>
+                                {weeksPerWave} wk{weeksPerWave > 1 ? 's' : ''}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '8px', borderRadius: '6px' }}>
-                          <div style={{ fontSize: '1rem', fontWeight: '700', color: '#F59E0B' }}>{formatCurrency(wave.totalROI)}</div>
-                          <div style={{ fontSize: '0.6rem', color: '#64748B' }}>Wave ROI</div>
-                        </div>
-                        <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '8px', borderRadius: '6px' }}>
-                          <div style={{ fontSize: '1rem', fontWeight: '700', color: '#A855F7' }}>{wave.roiPerDollar.toFixed(1)}x</div>
-                          <div style={{ fontSize: '0.6rem', color: '#64748B' }}>ROI/$ Spent</div>
-                        </div>
-                      </div>
+                      </>
                     );
                   })()}
                 </div>
