@@ -60,6 +60,8 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'roi' | 'yvs' | 'trucks' | 'name'>('roi');
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'facility' | 'waves'>('facility');
+  const [selectedWave, setSelectedWave] = useState<string | null>(null);
   
   const stats = useMemo(() => getNetworkStats(), []);
   
@@ -92,6 +94,74 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
       .filter(f => f.adoptionStatus === 'not_started')
       .sort((a, b) => b.projectedAnnualROI - a.projectedAnnualROI)
       .slice(0, 10);
+  }, []);
+
+  // ==========================================================================
+  // DEPLOYMENT WAVE OPTIMIZATION (Phiroz Method)
+  // ==========================================================================
+  // Group facilities by region for efficient field resource deployment
+  // Maximize ROI per wave while minimizing travel/training overhead
+  
+  const deploymentWaves = useMemo(() => {
+    const notStarted = PRIMO_FACILITIES.filter(f => f.adoptionStatus === 'not_started');
+    
+    // Group by state/province
+    const byRegion: Record<string, PrimoFacility[]> = {};
+    notStarted.forEach(f => {
+      const region = f.state;
+      if (!byRegion[region]) byRegion[region] = [];
+      byRegion[region].push(f);
+    });
+    
+    // Calculate wave metrics per region
+    const waves = Object.entries(byRegion)
+      .map(([region, facilities]) => {
+        const totalROI = facilities.reduce((sum, f) => sum + f.projectedAnnualROI, 0);
+        const totalDockDoors = facilities.reduce((sum, f) => sum + f.dockDoors, 0);
+        const avgYVS = facilities.reduce((sum, f) => sum + f.yvsScore, 0) / facilities.length;
+        const totalTrucks = facilities.reduce((sum, f) => sum + f.trucksPerDay, 0);
+        const implementationCost = facilities.length * 48000;
+        const roiPerDollar = totalROI / implementationCost;
+        
+        return {
+          region,
+          facilities,
+          count: facilities.length,
+          totalROI,
+          totalDockDoors,
+          avgYVS,
+          totalTrucks,
+          implementationCost,
+          roiPerDollar, // Higher = more efficient deployment
+          priority: roiPerDollar >= 3 ? 'CRITICAL' : roiPerDollar >= 2 ? 'HIGH' : roiPerDollar >= 1.5 ? 'STANDARD' : 'QUEUE'
+        };
+      })
+      .sort((a, b) => b.roiPerDollar - a.roiPerDollar);
+    
+    return waves;
+  }, []);
+
+  // Top 3 waves for immediate deployment focus
+  const priorityWaves = deploymentWaves.slice(0, 3);
+  
+  // Deployment velocity tracking
+  const deploymentVelocity = useMemo(() => {
+    const deployed = PRIMO_FACILITIES.filter(f => f.adoptionStatus !== 'not_started');
+    const remaining = PRIMO_FACILITIES.filter(f => f.adoptionStatus === 'not_started');
+    
+    // Assume 52-week target for full deployment
+    const weeksRemaining = 52;
+    const facilitiesPerWeek = remaining.length / weeksRemaining;
+    const roiPerWeek = remaining.reduce((sum, f) => sum + f.projectedAnnualROI, 0) / weeksRemaining;
+    
+    return {
+      deployed: deployed.length,
+      remaining: remaining.length,
+      targetPerWeek: Math.ceil(facilitiesPerWeek),
+      roiPerWeek,
+      weeksToComplete: weeksRemaining,
+      currentPace: deployed.length > 0 ? 'ON_TRACK' : 'STARTING' // Would calculate from goLiveDates
+    };
   }, []);
 
   // Calculate facility-specific metrics
@@ -168,6 +238,46 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
           
           {/* Network Summary */}
           <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+            {/* View Mode Toggle */}
+            <div style={{ 
+              display: 'flex', 
+              background: 'rgba(15, 23, 42, 0.8)',
+              borderRadius: '8px',
+              padding: '4px',
+              border: '1px solid rgba(59, 130, 246, 0.2)'
+            }}>
+              <button
+                onClick={() => setViewMode('facility')}
+                style={{
+                  padding: '6px 12px',
+                  background: viewMode === 'facility' ? 'rgba(59, 130, 246, 0.3)' : 'transparent',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: viewMode === 'facility' ? '#60A5FA' : '#64748B',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                📍 Facilities
+              </button>
+              <button
+                onClick={() => setViewMode('waves')}
+                style={{
+                  padding: '6px 12px',
+                  background: viewMode === 'waves' ? 'rgba(16, 185, 129, 0.3)' : 'transparent',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: viewMode === 'waves' ? '#10B981' : '#64748B',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                🌊 Waves
+              </button>
+            </div>
+            
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '1.3rem', fontWeight: '700', color: '#10B981' }}>
                 {formatCurrency(stats.projectedAnnualROI)}
@@ -202,7 +312,315 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
           </div>
         </div>
 
-        {/* Main Content - 3 Column Layout */}
+        {/* Main Content Area */}
+        {viewMode === 'waves' ? (
+          /* ================================================================
+           * WAVE PLANNING VIEW - Deployment Optimization Dashboard
+           * ================================================================ */
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            
+            {/* LEFT: Wave List */}
+            <div style={{
+              width: '360px',
+              background: 'rgba(5, 10, 20, 0.95)',
+              borderRight: '1px solid rgba(16, 185, 129, 0.2)',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              {/* Velocity Header */}
+              <div style={{ 
+                padding: '16px',
+                background: 'linear-gradient(180deg, rgba(16, 185, 129, 0.1), transparent)',
+                borderBottom: '1px solid rgba(16, 185, 129, 0.2)'
+              }}>
+                <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  📊 Deployment Velocity
+                </div>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#10B981' }}>
+                      {deploymentVelocity.targetPerWeek}
+                    </div>
+                    <div style={{ fontSize: '0.6rem', color: '#64748B' }}>facilities/week</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#3B82F6' }}>
+                      {deploymentVelocity.remaining}
+                    </div>
+                    <div style={{ fontSize: '0.6rem', color: '#64748B' }}>remaining</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#F59E0B' }}>
+                      {formatCurrency(deploymentVelocity.roiPerWeek)}
+                    </div>
+                    <div style={{ fontSize: '0.6rem', color: '#64748B' }}>ROI/week</div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Wave List */}
+              <div style={{ flex: 1, overflowY: 'auto' }}>
+                <div style={{ padding: '12px 16px', fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>
+                  🌊 Regional Deployment Waves ({deploymentWaves.length})
+                </div>
+                {deploymentWaves.map((wave, idx) => (
+                  <div
+                    key={wave.region}
+                    onClick={() => setSelectedWave(wave.region)}
+                    style={{
+                      padding: '14px 16px',
+                      background: selectedWave === wave.region ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                      borderBottom: '1px solid rgba(16, 185, 129, 0.1)',
+                      borderLeft: selectedWave === wave.region ? '3px solid #10B981' : '3px solid transparent',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ 
+                          fontWeight: '600', 
+                          fontSize: '0.85rem',
+                          color: selectedWave === wave.region ? '#10B981' : '#E2E8F0'
+                        }}>
+                          {wave.region}
+                        </div>
+                        <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>
+                          {wave.count} facilities • {wave.totalDockDoors} dock doors
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ 
+                          fontSize: '0.6rem', 
+                          padding: '2px 6px',
+                          background: wave.priority === 'CRITICAL' ? 'rgba(239, 68, 68, 0.2)' :
+                                      wave.priority === 'HIGH' ? 'rgba(245, 158, 11, 0.2)' :
+                                      'rgba(59, 130, 246, 0.2)',
+                          color: wave.priority === 'CRITICAL' ? '#EF4444' :
+                                 wave.priority === 'HIGH' ? '#F59E0B' : '#3B82F6',
+                          borderRadius: '4px',
+                          fontWeight: '600'
+                        }}>
+                          {wave.priority}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '12px', 
+                      marginTop: '8px',
+                      fontSize: '0.65rem'
+                    }}>
+                      <span style={{ color: '#10B981' }}>{formatCurrency(wave.totalROI)} ROI</span>
+                      <span style={{ color: '#64748B' }}>•</span>
+                      <span style={{ color: '#60A5FA' }}>{wave.roiPerDollar.toFixed(1)}x return</span>
+                      <span style={{ color: '#64748B' }}>•</span>
+                      <span style={{ color: '#94A3B8' }}>{formatNumber(wave.totalTrucks)} trucks/day</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* CENTER: Wave Map */}
+            <div style={{ flex: 1, position: 'relative' }}>
+              <Map
+                mapboxAccessToken={MAPBOX_TOKEN}
+                initialViewState={{
+                  longitude: -98,
+                  latitude: 39,
+                  zoom: 3.5
+                }}
+                style={{ width: '100%', height: '100%' }}
+                mapStyle="mapbox://styles/mapbox/dark-v11"
+              >
+                {/* Show all pending facilities, highlight selected wave */}
+                {PRIMO_FACILITIES.filter(f => f.adoptionStatus === 'not_started').map(facility => {
+                  const isInSelectedWave = selectedWave === facility.state;
+                  return (
+                    <Marker
+                      key={facility.id}
+                      longitude={facility.coordinates.lng}
+                      latitude={facility.coordinates.lat}
+                    >
+                      <div
+                        onClick={() => {
+                          setSelectedWave(facility.state);
+                          setSelectedFacility(facility);
+                        }}
+                        style={{
+                          width: isInSelectedWave ? '16px' : '10px',
+                          height: isInSelectedWave ? '16px' : '10px',
+                          background: isInSelectedWave ? '#10B981' : 'rgba(100, 116, 139, 0.6)',
+                          borderRadius: '50%',
+                          border: isInSelectedWave ? '2px solid #fff' : 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          boxShadow: isInSelectedWave ? '0 0 12px rgba(16, 185, 129, 0.5)' : 'none'
+                        }}
+                      />
+                    </Marker>
+                  );
+                })}
+              </Map>
+              
+              {/* Wave Summary Overlay */}
+              {selectedWave && (
+                <div style={{
+                  position: 'absolute',
+                  top: '20px',
+                  left: '20px',
+                  background: 'rgba(5, 10, 20, 0.95)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  minWidth: '280px'
+                }}>
+                  <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>
+                    Wave Details
+                  </div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#10B981', marginTop: '4px' }}>
+                    {selectedWave} Region
+                  </div>
+                  {(() => {
+                    const wave = deploymentWaves.find(w => w.region === selectedWave);
+                    if (!wave) return null;
+                    return (
+                      <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                          <div style={{ fontSize: '1rem', fontWeight: '700', color: '#10B981' }}>{wave.count}</div>
+                          <div style={{ fontSize: '0.6rem', color: '#64748B' }}>Facilities</div>
+                        </div>
+                        <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                          <div style={{ fontSize: '1rem', fontWeight: '700', color: '#3B82F6' }}>{wave.totalDockDoors}</div>
+                          <div style={{ fontSize: '0.6rem', color: '#64748B' }}>Dock Doors</div>
+                        </div>
+                        <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                          <div style={{ fontSize: '1rem', fontWeight: '700', color: '#F59E0B' }}>{formatCurrency(wave.totalROI)}</div>
+                          <div style={{ fontSize: '0.6rem', color: '#64748B' }}>Wave ROI</div>
+                        </div>
+                        <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                          <div style={{ fontSize: '1rem', fontWeight: '700', color: '#A855F7' }}>{wave.roiPerDollar.toFixed(1)}x</div>
+                          <div style={{ fontSize: '0.6rem', color: '#64748B' }}>ROI/$ Spent</div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+            
+            {/* RIGHT: Wave Action Panel */}
+            <div style={{
+              width: '300px',
+              background: 'rgba(5, 10, 20, 0.95)',
+              borderLeft: '1px solid rgba(16, 185, 129, 0.2)',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <div style={{ padding: '16px', borderBottom: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                <div style={{ fontSize: '0.65rem', color: '#64748B', textTransform: 'uppercase' }}>
+                  🎯 Priority Waves
+                </div>
+                <div style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '4px' }}>
+                  Top 3 by ROI efficiency
+                </div>
+              </div>
+              
+              {priorityWaves.map((wave, idx) => (
+                <div 
+                  key={wave.region}
+                  onClick={() => setSelectedWave(wave.region)}
+                  style={{ 
+                    padding: '16px',
+                    borderBottom: '1px solid rgba(16, 185, 129, 0.1)',
+                    cursor: 'pointer',
+                    background: selectedWave === wave.region ? 'rgba(16, 185, 129, 0.1)' : 'transparent'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '28px',
+                      height: '28px',
+                      background: idx === 0 ? 'rgba(239, 68, 68, 0.2)' :
+                                  idx === 1 ? 'rgba(245, 158, 11, 0.2)' :
+                                  'rgba(59, 130, 246, 0.2)',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.8rem',
+                      fontWeight: '700',
+                      color: idx === 0 ? '#EF4444' : idx === 1 ? '#F59E0B' : '#3B82F6'
+                    }}>
+                      {idx + 1}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>{wave.region}</div>
+                      <div style={{ fontSize: '0.65rem', color: '#64748B' }}>
+                        {wave.count} facilities • {wave.roiPerDollar.toFixed(1)}x return
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.9rem', fontWeight: '700', color: '#10B981' }}>
+                        {formatCurrency(wave.totalROI)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Launch Wave Button */}
+              {selectedWave && (
+                <div style={{ padding: '16px', marginTop: 'auto' }}>
+                  <button style={{
+                    width: '100%',
+                    padding: '14px',
+                    background: 'linear-gradient(135deg, #10B981, #059669)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: '#fff',
+                    fontSize: '0.85rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    marginBottom: '8px'
+                  }}>
+                    🚀 LAUNCH {selectedWave} WAVE
+                  </button>
+                  <div style={{ fontSize: '0.6rem', color: '#64748B', textAlign: 'center' }}>
+                    {deploymentWaves.find(w => w.region === selectedWave)?.count || 0} facilities • 
+                    Est. {Math.ceil((deploymentWaves.find(w => w.region === selectedWave)?.count || 1) / 5)} weeks
+                  </div>
+                </div>
+              )}
+              
+              {/* Quick Stats */}
+              <div style={{ padding: '16px', background: 'rgba(10, 15, 25, 0.5)', borderTop: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                <div style={{ fontSize: '0.6rem', color: '#64748B', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  Network Progress
+                </div>
+                <div style={{ 
+                  height: '8px', 
+                  background: 'rgba(100, 116, 139, 0.2)', 
+                  borderRadius: '4px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${(deploymentVelocity.deployed / (deploymentVelocity.deployed + deploymentVelocity.remaining)) * 100}%`,
+                    background: 'linear-gradient(90deg, #10B981, #3B82F6)',
+                    borderRadius: '4px'
+                  }} />
+                </div>
+                <div style={{ fontSize: '0.6rem', color: '#94A3B8', marginTop: '4px' }}>
+                  {deploymentVelocity.deployed} live / {deploymentVelocity.deployed + deploymentVelocity.remaining} total
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+        /* ================================================================
+         * FACILITY VIEW - Original 3 Column Layout
+         * ================================================================ */
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           
           {/* LEFT: Facility List */}
@@ -779,6 +1197,7 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
             )}
           </div>
         </div>
+        )}
       </div>
     </>
   );
