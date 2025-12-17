@@ -720,6 +720,38 @@ export default function YardMap() {
         gap: '8px',
         zIndex: 1000
       }}>
+        {/* PRIMARY CTA: Command Center - Deployment Hub */}
+        <button
+          onClick={() => setShowCommandCenter(true)}
+          style={{
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(59, 130, 246, 0.25) 100%)',
+            border: '2px solid rgba(16, 185, 129, 0.6)',
+            color: '#10B981',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontFamily: '"Inter", -apple-system, sans-serif',
+            fontSize: '0.8rem',
+            fontWeight: '700',
+            letterSpacing: '0.5px',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          🎯 Deployment Hub
+          <span style={{
+            background: '#10B981',
+            color: '#000',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontSize: '0.6rem',
+            fontWeight: '800'
+          }}>260 SITES</span>
+        </button>
+        
         <button
           onClick={() => setShowROI(true)}
           style={{
