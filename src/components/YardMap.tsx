@@ -442,6 +442,7 @@ export default function YardMap() {
   const [showNorthAmericaMap, setShowNorthAmericaMap] = useState(false);
   const [showFacilitySelector, setShowFacilitySelector] = useState(false);
   const [showCommandCenter, setShowCommandCenter] = useState(false);
+  const [showLandingSplash, setShowLandingSplash] = useState(true);
   const [selectedFacility, setSelectedFacility] = useState<PrimoFacility>(PRIMO_FACILITIES[0]); // Default to first facility
   const [soundEnabled, setSoundEnabled] = useState(false); // Off by default - user must enable
   const [logoClicks, setLogoClicks] = useState(0);
@@ -463,6 +464,12 @@ export default function YardMap() {
     zoom: 18,
     pitch: 45
   });
+  
+  // Get network stats for landing splash
+  const networkStats = useMemo(() => getNetworkStats(), []);
+  const deployedFacilities = PRIMO_FACILITIES.filter(f => f.adoptionStatus !== 'not_started');
+  const avgDeploymentWeeks = 2.3; // Average weeks to go-live
+  const totalDockDoors = PRIMO_FACILITIES.reduce((sum, f) => sum + (f.dockDoors || 0), 0);
 
   // Simulate live activity feed
   useEffect(() => {
@@ -1564,6 +1571,217 @@ export default function YardMap() {
         <AdoptionLeaderboard onClose={() => setShowAdoptionLeaderboard(false)} />
       )}
       
+      
+      {/* Landing Splash - Instant Value Visibility */}
+      {showLandingSplash && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(135deg, rgba(5, 10, 20, 0.98) 0%, rgba(10, 20, 40, 0.98) 100%)',
+          zIndex: 10000,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: '"Inter", -apple-system, sans-serif',
+          animation: 'fadeIn 0.5s ease-out'
+        }}>
+          {/* Logo & Title */}
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🎯</div>
+            <h1 style={{
+              fontSize: '2.5rem',
+              fontWeight: '800',
+              background: 'linear-gradient(135deg, #60A5FA 0%, #34D399 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              margin: '0 0 8px 0',
+              letterSpacing: '-1px'
+            }}>
+              FreightRoll YardBuilder
+            </h1>
+            <p style={{ color: '#64748B', fontSize: '1rem', margin: 0 }}>
+              Primo Brands Network Deployment Platform
+            </p>
+          </div>
+          
+          {/* Key Metrics Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '24px',
+            marginBottom: '48px',
+            maxWidth: '900px'
+          }}>
+            {/* Total ROI Potential */}
+            <div style={{
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '16px',
+              padding: '24px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: '800', color: '#10B981' }}>
+                ${(networkStats.projectedAnnualROI / 1000000).toFixed(1)}M
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
+                NETWORK ROI POTENTIAL
+              </div>
+            </div>
+            
+            {/* Facilities */}
+            <div style={{
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+              borderRadius: '16px',
+              padding: '24px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: '800', color: '#3B82F6' }}>
+                {networkStats.totalFacilities}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
+                FACILITIES IN NETWORK
+              </div>
+            </div>
+            
+            {/* Deployed */}
+            <div style={{
+              background: 'rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              borderRadius: '16px',
+              padding: '24px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: '800', color: '#F59E0B' }}>
+                {deployedFacilities.length}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
+                FACILITIES DEPLOYED
+              </div>
+            </div>
+            
+            {/* Dock Doors */}
+            <div style={{
+              background: 'rgba(139, 92, 246, 0.1)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              borderRadius: '16px',
+              padding: '24px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '2.2rem', fontWeight: '800', color: '#A855F7' }}>
+                {totalDockDoors.toLocaleString()}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
+                TOTAL DOCK DOORS
+              </div>
+            </div>
+          </div>
+          
+          {/* Time to Value Stats */}
+          <div style={{
+            background: 'rgba(15, 23, 42, 0.6)',
+            border: '1px solid rgba(59, 130, 246, 0.2)',
+            borderRadius: '12px',
+            padding: '20px 40px',
+            marginBottom: '40px',
+            display: 'flex',
+            gap: '48px',
+            alignItems: 'center'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#10B981' }}>
+                {avgDeploymentWeeks} weeks
+              </div>
+              <div style={{ fontSize: '0.7rem', color: '#64748B' }}>AVG TIME TO GO-LIVE</div>
+            </div>
+            <div style={{ width: '1px', height: '40px', background: 'rgba(100, 116, 139, 0.3)' }} />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#3B82F6' }}>
+                {networkStats.totalTrucksPerDay.toLocaleString()}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: '#64748B' }}>TRUCKS/DAY MANAGED</div>
+            </div>
+            <div style={{ width: '1px', height: '40px', background: 'rgba(100, 116, 139, 0.3)' }} />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#F59E0B' }}>
+                {networkStats.avgTurnTimeImprovement}%
+              </div>
+              <div style={{ fontSize: '0.7rem', color: '#64748B' }}>AVG TURN TIME IMPROVEMENT</div>
+            </div>
+            <div style={{ width: '1px', height: '40px', background: 'rgba(100, 116, 139, 0.3)' }} />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#A855F7' }}>
+                {networkStats.avgYVS}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: '#64748B' }}>NETWORK YVS SCORE</div>
+            </div>
+          </div>
+          
+          {/* CTA Buttons */}
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <button
+              onClick={() => {
+                setShowLandingSplash(false);
+                setShowCommandCenter(true);
+              }}
+              style={{
+                padding: '16px 32px',
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                border: 'none',
+                borderRadius: '12px',
+                color: '#fff',
+                fontSize: '1rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                boxShadow: '0 4px 20px rgba(16, 185, 129, 0.4)'
+              }}
+            >
+              🎯 Open Deployment Hub
+              <span style={{
+                background: 'rgba(255,255,255,0.2)',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '0.75rem'
+              }}>
+                {networkStats.totalFacilities - deployedFacilities.length} pending
+              </span>
+            </button>
+            
+            <button
+              onClick={() => setShowLandingSplash(false)}
+              style={{
+                padding: '16px 32px',
+                background: 'rgba(59, 130, 246, 0.15)',
+                border: '1px solid rgba(59, 130, 246, 0.4)',
+                borderRadius: '12px',
+                color: '#60A5FA',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              View 3D Simulation →
+            </button>
+          </div>
+          
+          {/* Footer */}
+          <div style={{
+            position: 'absolute',
+            bottom: '24px',
+            color: '#475569',
+            fontSize: '0.75rem'
+          }}>
+            FreightRoll • Yard Management System • © 2024
+          </div>
+        </div>
+      )}
       {/* Facility Command Center - Unified deployment view */}
       {showCommandCenter && (
         <FacilityCommandCenter 

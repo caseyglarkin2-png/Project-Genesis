@@ -86,6 +86,9 @@ export default function SatelliteAnalysisPanel({
     // Simulate AI analysis - in production this would call a vision API
     await new Promise(resolve => setTimeout(resolve, 2000));
     
+    // Use newCoords (current pin location) not original facility.coordinates
+    const analysisCenter = newCoords;
+    
     // Generate mock detection based on facility data
     const mockDockDoors: DetectedFeature[] = [];
     const dockCount = facility.dockDoors || 24;
@@ -96,7 +99,7 @@ export default function SatelliteAnalysisPanel({
       mockDockDoors.push({
         id: `dock-${i}`,
         type: 'dock_door',
-        coordinates: [facility.coordinates.lng + offset, facility.coordinates.lat + 0.0003],
+        coordinates: [analysisCenter.lng + offset, analysisCenter.lat + 0.0003],
         label: `Dock ${i + 1}`
       });
     }
@@ -107,8 +110,8 @@ export default function SatelliteAnalysisPanel({
       const row = Math.floor(i / 5);
       const col = i % 5;
       mockDockDoors.push({
-        id: `trailer-${i}`,
-        type: 'trailer',
+        idanalysisCenter.lng + (col - 2) * 0.00015,
+          analysisCenter
         coordinates: [
           facility.coordinates.lng + (col - 2) * 0.00015,
           facility.coordinates.lat - 0.0005 - row * 0.0002
