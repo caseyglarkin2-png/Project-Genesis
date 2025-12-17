@@ -660,7 +660,7 @@ export default function NorthAmericaMap({ onClose, onZoomToFacility }: { onClose
                       </div>
                     )}
                     
-                    {/* Satellite Recon Button */}
+                    {/* Open Command Center Button */}
                     <button
                       onClick={() => {
                         if (onZoomToFacility) {
@@ -671,10 +671,10 @@ export default function NorthAmericaMap({ onClose, onZoomToFacility }: { onClose
                         width: '100%',
                         marginTop: '12px',
                         padding: '10px 16px',
-                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))',
-                        border: '1px solid rgba(59, 130, 246, 0.4)',
+                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2))',
+                        border: '1px solid rgba(16, 185, 129, 0.4)',
                         borderRadius: '8px',
-                        color: '#60A5FA',
+                        color: '#34D399',
                         fontSize: '0.75rem',
                         fontWeight: '600',
                         cursor: 'pointer',
@@ -685,15 +685,15 @@ export default function NorthAmericaMap({ onClose, onZoomToFacility }: { onClose
                         transition: 'all 0.2s ease'
                       }}
                       onMouseOver={(e) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))';
-                        e.currentTarget.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.3)';
+                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(59, 130, 246, 0.3))';
+                        e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.3)';
                       }}
                       onMouseOut={(e) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))';
+                        e.currentTarget.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2))';
                         e.currentTarget.style.boxShadow = 'none';
                       }}
                     >
-                      🛰️ SATELLITE RECON
+                      🎯 COMMAND CENTER
                       <span style={{ fontSize: '0.6rem', opacity: 0.7 }}>→</span>
                     </button>
                   </div>

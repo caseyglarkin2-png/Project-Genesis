@@ -13,7 +13,7 @@ import ROICalculator from './ROICalculator';
 import NetworkMap from './NetworkMap';
 import AdoptionLeaderboard from './AdoptionLeaderboard';
 import NorthAmericaMap from './NorthAmericaMap';
-import SatelliteRecon from './SatelliteRecon';
+import FacilityCommandCenter from './FacilityCommandCenter';
 import { getNetworkStats, PRIMO_FACILITIES, PrimoFacility } from '../data/primo-facilities';
 
 // MAPBOX TOKEN REQUIRED HERE
@@ -441,7 +441,7 @@ export default function YardMap() {
   const [showAdoptionLeaderboard, setShowAdoptionLeaderboard] = useState(false);
   const [showNorthAmericaMap, setShowNorthAmericaMap] = useState(false);
   const [showFacilitySelector, setShowFacilitySelector] = useState(false);
-  const [showSatelliteRecon, setShowSatelliteRecon] = useState(false);
+  const [showCommandCenter, setShowCommandCenter] = useState(false);
   const [selectedFacility, setSelectedFacility] = useState<PrimoFacility>(PRIMO_FACILITIES[0]); // Default to first facility
   const [soundEnabled, setSoundEnabled] = useState(false); // Off by default - user must enable
   const [logoClicks, setLogoClicks] = useState(0);
@@ -1478,17 +1478,17 @@ export default function YardMap() {
             </button>
           </div>
           
-          {/* Satellite Recon Button */}
+          {/* Open Command Center Button */}
           <button
-            onClick={() => setShowSatelliteRecon(true)}
+            onClick={() => setShowCommandCenter(true)}
             style={{
               width: '100%',
               marginTop: '10px',
               padding: '10px 16px',
-              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2))',
-              border: '1px solid rgba(59, 130, 246, 0.4)',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2))',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
               borderRadius: '8px',
-              color: '#60A5FA',
+              color: '#34D399',
               fontSize: '0.75rem',
               fontWeight: '600',
               cursor: 'pointer',
@@ -1499,7 +1499,7 @@ export default function YardMap() {
               transition: 'all 0.2s ease'
             }}
           >
-            🛰️ SATELLITE RECON
+            🎯 COMMAND CENTER
           </button>
         </div>
       )}
@@ -1519,15 +1519,10 @@ export default function YardMap() {
         <NorthAmericaMap 
           onClose={() => setShowNorthAmericaMap(false)} 
           onZoomToFacility={(facility) => {
-            // Close the NA map and zoom to the facility's satellite view
+            // Close the NA map and open Command Center for that facility
             setShowNorthAmericaMap(false);
             setSelectedFacility(facility);
-            setViewState({
-              longitude: facility.coordinates.lng,
-              latitude: facility.coordinates.lat,
-              zoom: 18,
-              pitch: 45
-            });
+            setShowCommandCenter(true);
           }}
         />
       )}
@@ -1537,15 +1532,11 @@ export default function YardMap() {
         <AdoptionLeaderboard onClose={() => setShowAdoptionLeaderboard(false)} />
       )}
       
-      {/* Satellite Recon Modal */}
-      {showSatelliteRecon && selectedFacility && (
-        <SatelliteRecon 
-          facility={selectedFacility}
-          onClose={() => setShowSatelliteRecon(false)}
-          onAcceptMapping={(detections) => {
-            console.log('Mapping accepted with', detections.length, 'detections');
-            // Future: Save detections to facility data
-          }}
+      {/* Facility Command Center - Unified deployment view */}
+      {showCommandCenter && (
+        <FacilityCommandCenter 
+          onClose={() => setShowCommandCenter(false)}
+          initialFacility={selectedFacility}
         />
       )}
     </div>
