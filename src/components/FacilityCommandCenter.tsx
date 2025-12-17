@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import Map, { Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { PRIMO_FACILITIES, PrimoFacility, getNetworkStats } from '../data/primo-facilities';
+import YardOperationsView from './YardOperationsView';
 
 /**
  * =============================================================================
@@ -62,6 +63,7 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'facility' | 'waves'>('facility');
   const [selectedWave, setSelectedWave] = useState<string | null>(null);
+  const [showYardOps, setShowYardOps] = useState(false);
   
   const stats = useMemo(() => getNetworkStats(), []);
   
@@ -1130,15 +1132,32 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                 </>
               ) : (
                 <>
+                  <button 
+                    onClick={() => setShowYardOps(true)}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      background: 'linear-gradient(135deg, #10B981, #059669)',
+                      border: 'none',
+                      borderRadius: '10px',
+                      color: '#fff',
+                      fontSize: '0.85rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      marginBottom: '8px',
+                      boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
+                    }}>
+                    🏭 YARD OPERATIONS
+                  </button>
                   <button style={{
                     width: '100%',
-                    padding: '14px',
-                    background: 'linear-gradient(135deg, #3B82F6, #2563EB)',
-                    border: 'none',
-                    borderRadius: '10px',
-                    color: '#fff',
-                    fontSize: '0.85rem',
-                    fontWeight: '700',
+                    padding: '10px',
+                    background: 'rgba(59, 130, 246, 0.1)',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                    borderRadius: '8px',
+                    color: '#3B82F6',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
                     cursor: 'pointer',
                     marginBottom: '8px'
                   }}>
@@ -1199,6 +1218,14 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
         </div>
         )}
       </div>
+      
+      {/* Yard Operations Drill-Down */}
+      {showYardOps && (
+        <YardOperationsView 
+          facility={selectedFacility}
+          onClose={() => setShowYardOps(false)}
+        />
+      )}
     </>
   );
 }
