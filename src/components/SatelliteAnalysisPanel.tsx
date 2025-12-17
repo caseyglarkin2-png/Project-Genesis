@@ -93,28 +93,39 @@ export default function SatelliteAnalysisPanel({
     const mockDockDoors: DetectedFeature[] = [];
     const dockCount = facility.dockDoors || 24;
     
-    // Create dock door markers in a line (simulating detection)
-    for (let i = 0; i < Math.min(dockCount, 20); i++) {
-      const offset = (i - 10) * 0.00008;
+    // Large distribution centers: docks are typically along the building edge
+    // Building width ~300m = ~0.003° longitude, docks spaced ~3m apart
+    // Place dock doors along the SOUTH edge of building (typical cross-dock layout)
+    const dockSpacing = 0.00004; // ~4 meters between docks
+    const dockRowOffset = -0.0012; // South of building center (~130m)
+    const dockRowWidth = Math.min(dockCount, 40) * dockSpacing;
+    
+    for (let i = 0; i < Math.min(dockCount, 40); i++) {
+      const offset = (i - Math.min(dockCount, 40) / 2) * dockSpacing;
       mockDockDoors.push({
         id: `dock-${i}`,
         type: 'dock_door',
-        coordinates: [analysisCenter.lng + offset, analysisCenter.lat + 0.0003],
+        coordinates: [analysisCenter.lng + offset, analysisCenter.lat + dockRowOffset],
         label: `Dock ${i + 1}`
       });
     }
     
-    // Add some trailers
+    // Add trailers in the yard - south of the dock doors
+    // Trailers are typically staged in rows in the yard
     const trailerCount = Math.floor((facility.detectedTrailers || 20) * 0.7);
-    for (let i = 0; i < Math.min(trailerCount, 15); i++) {
+    const trailerSpacing = 0.00025; // ~25m between trailers
+    const trailerRowSpacing = 0.0003; // ~30m between rows
+    const trailerYardStart = -0.0022; // Start of trailer yard (~240m south of center)
+    
+    for (let i = 0; i < Math.min(trailerCount, 20); i++) {
       const row = Math.floor(i / 5);
       const col = i % 5;
       mockDockDoors.push({
         id: `trailer-${i}`,
         type: 'trailer',
         coordinates: [
-          analysisCenter.lng + (col - 2) * 0.00015,
-          analysisCenter.lat - 0.0005 - row * 0.0002
+          analysisCenter.lng + (col - 2) * trailerSpacing,
+          analysisCenter.lat + trailerYardStart - row * trailerRowSpacing
         ],
         label: `Trailer ${i + 1}`
       });
