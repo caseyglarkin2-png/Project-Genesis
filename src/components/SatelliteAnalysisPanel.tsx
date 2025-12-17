@@ -90,57 +90,189 @@ export default function SatelliteAnalysisPanel({
     const analysisCenter = newCoords;
     
     // Generate mock detection based on facility data
-    const mockDockDoors: DetectedFeature[] = [];
+    const detectedItems: DetectedFeature[] = [];
     const dockCount = facility.dockDoors || 24;
+    const yardSpots = facility.yardSpots || 50;
     
-    // Large distribution centers: docks are typically along the building edge
-    // Building width ~300m = ~0.003° longitude, docks spaced ~3m apart
-    // Place dock doors along the SOUTH edge of building (typical cross-dock layout)
+    // ===== FACILITY GEOMETRY CALCULATIONS =====
+    // 1° latitude ≈ 111,000 meters, 1° longitude ≈ 85,000 meters (at 40° lat)
+    // Typical DC building: 150-500m long, 80-150m wide
+    // Scale factor based on dock count (more docks = larger building)
+    const buildingScale = Math.min(dockCount / 30, 1.5); // Scale 0.5x to 1.5x
+    
+    // Building dimensions in degrees
+    const buildingLengthDeg = 0.003 * buildingScale;  // ~250-375m East-West
+    const buildingWidthDeg = 0.001 * buildingScale;   // ~85-125m North-South
+    
+    // Determine if cross-dock (docks on 2 sides) based on dock count
+    const isCrossDock = dockCount > 40;
+    
+    // ===== DOCK DOORS =====
+    // Docks are along the building edge with ~4m spacing
     const dockSpacing = 0.00004; // ~4 meters between docks
-    const dockRowOffset = -0.0012; // South of building center (~130m)
-    const dockRowWidth = Math.min(dockCount, 40) * dockSpacing;
+    const northDockY = buildingWidthDeg / 2 + 0.0001;  // Just north of building
+    const southDockY = -buildingWidthDeg / 2 - 0.0001; // Just south of building
     
-    for (let i = 0; i < Math.min(dockCount, 40); i++) {
-      const offset = (i - Math.min(dockCount, 40) / 2) * dockSpacing;
-      mockDockDoors.push({
-        id: `dock-${i}`,
+    // Primary dock row (south side typically for receiving)
+    const primaryDockCount = isCrossDock ? Math.ceil(dockCount * 0.6) : dockCount;
+    const primaryDockWidth = primaryDockCount * dockSpacing;
+    
+    for (let i = 0; i < Math.min(primaryDockCount, 50); i++) {
+      const offset = (i - primaryDockCount / 2) * dockSpacing;
+      detectedItems.push({
+        id: `dock-south-${i}`,
         type: 'dock_door',
-        coordinates: [analysisCenter.lng + offset, analysisCenter.lat + dockRowOffset],
-        label: `Dock ${i + 1}`
+        coordinates: [analysisCenter.lng + offset, analysisCenter.lat + southDockY],
+        label: `Dock S${i + 1}`
       });
     }
     
-    // Add trailers in the yard - south of the dock doors
-    // Trailers are typically staged in rows in the yard
-    const trailerCount = Math.floor((facility.detectedTrailers || 20) * 0.7);
-    const trailerSpacing = 0.00025; // ~25m between trailers
-    const trailerRowSpacing = 0.0003; // ~30m between rows
-    const trailerYardStart = -0.0022; // Start of trailer yard (~240m south of center)
+    // Secondary dock row (north side for shipping) - only for cross-docks
+    if (isCrossDock) {
+      const secondaryDockCount = dockCount - primaryDockCount;
+      for (let i = 0; i < secondaryDockCount; i++) {
+        const offset = (i - secondaryDockCount / 2) * dockSpacing;
+        detectedItems.push({
+          id: `dock-north-${i}`,
+          type: 'dock_door',
+          coordinates: [analysisCenter.lng + offset, analysisCenter.lat + northDockY],
+          label: `Dock N${i + 1}`
+        });
+      }
+    }
     
-    for (let i = 0; i < Math.min(trailerCount, 20); i++) {
-      const row = Math.floor(i / 5);
-      const col = i % 5;
-      mockDockDoors.push({
+    // ===== TRAILERS IN YARD =====
+    // Trailers are staged in rows south of the dock doors
+    const trailerCount = Math.floor((facility.detectedTrailers || Math.round(dockCount * 0.8)) * 0.7);
+    const trailerSpacing = 0.00035;    // ~30m between trailers (53ft trailer + space)
+    const trailerRowSpacing = 0.00045; // ~40m between rows (maneuvering room)
+    const trailerYardStart = southDockY - 0.0008; // Start ~80m south of docks
+    const trailersPerRow = 6;
+    
+    for (let i = 0; i < Math.min(trailerCount, 30); i++) {
+      const row = Math.floor(i / trailersPerRow);
+      const col = i % trailersPerRow;
+      detectedItems.push({
         id: `trailer-${i}`,
         type: 'trailer',
         coordinates: [
-          analysisCenter.lng + (col - 2) * trailerSpacing,
+          analysisCenter.lng + (col - trailersPerRow / 2) * trailerSpacing,
           analysisCenter.lat + trailerYardStart - row * trailerRowSpacing
         ],
         label: `Trailer ${i + 1}`
       });
     }
     
-    setDetectedFeatures(mockDockDoors);
+    // ===== TRUCKS (ACTIVE) =====
+    // Some trucks at docks, some in yard lanes
+    const truckCount = facility.detectedTrucks || Math.round(dockCount * 0.4);
+    const trucksAtDocks = Math.floor(truckCount * 0.6);
+    const trucksInYard = truckCount - trucksAtDocks;
+    
+    // Trucks backed into random dock positions
+    for (let i = 0; i < Math.min(trucksAtDocks, 15); i++) {
+      const dockIndex = Math.floor(Math.random() * primaryDockCount);
+      const offset = (dockIndex - primaryDockCount / 2) * dockSpacing;
+      detectedItems.push({
+        id: `truck-dock-${i}`,
+        type: 'truck',
+        coordinates: [
+          analysisCenter.lng + offset,
+          analysisCenter.lat + southDockY - 0.0003 // ~30m from dock face
+        ],
+        label: `Truck ${i + 1} (Docked)`
+      });
+    }
+    
+    // Trucks in yard lanes
+    for (let i = 0; i < Math.min(trucksInYard, 8); i++) {
+      detectedItems.push({
+        id: `truck-yard-${i}`,
+        type: 'truck',
+        coordinates: [
+          analysisCenter.lng + (Math.random() - 0.5) * buildingLengthDeg * 0.8,
+          analysisCenter.lat + trailerYardStart - 0.0015 - Math.random() * 0.001
+        ],
+        label: `Truck ${trucksAtDocks + i + 1} (Yard)`
+      });
+    }
+    
+    // ===== PARKING / STAGING SPOTS =====
+    // Employee parking usually east or west of building
+    const parkingSpots = Math.min(yardSpots, 80);
+    const parkingRows = Math.ceil(parkingSpots / 10);
+    const parkingSpacing = 0.00003; // ~3m between spots
+    const parkingRowSpacing = 0.00006; // ~6m between rows
+    const parkingStartX = buildingLengthDeg / 2 + 0.0005; // East of building
+    
+    for (let i = 0; i < parkingSpots; i++) {
+      const row = Math.floor(i / 10);
+      const col = i % 10;
+      detectedItems.push({
+        id: `parking-${i}`,
+        type: 'parking',
+        coordinates: [
+          analysisCenter.lng + parkingStartX + col * parkingSpacing,
+          analysisCenter.lat + (row - parkingRows / 2) * parkingRowSpacing
+        ],
+        label: `Spot ${i + 1}`
+      });
+    }
+    
+    // ===== GATES =====
+    // Entry/exit gates - typically 2-4 for security
+    const gatePositions = [
+      { x: -buildingLengthDeg / 2 - 0.001, y: -buildingWidthDeg - 0.001, label: 'Main Gate (West)' },
+      { x: buildingLengthDeg / 2 + 0.001, y: -buildingWidthDeg - 0.001, label: 'Gate (East)' },
+    ];
+    
+    // Add a north gate for cross-docks
+    if (isCrossDock) {
+      gatePositions.push(
+        { x: 0, y: buildingWidthDeg / 2 + 0.001, label: 'Shipping Gate (North)' }
+      );
+    }
+    
+    gatePositions.forEach((gate, i) => {
+      detectedItems.push({
+        id: `gate-${i}`,
+        type: 'gate',
+        coordinates: [analysisCenter.lng + gate.x, analysisCenter.lat + gate.y],
+        label: gate.label
+      });
+    });
+    
+    // ===== BUILDING OUTLINE (corners) =====
+    const buildingCorners = [
+      { x: -buildingLengthDeg / 2, y: -buildingWidthDeg / 2 },
+      { x: buildingLengthDeg / 2, y: -buildingWidthDeg / 2 },
+      { x: buildingLengthDeg / 2, y: buildingWidthDeg / 2 },
+      { x: -buildingLengthDeg / 2, y: buildingWidthDeg / 2 },
+    ];
+    
+    buildingCorners.forEach((corner, i) => {
+      detectedItems.push({
+        id: `building-corner-${i}`,
+        type: 'building',
+        coordinates: [analysisCenter.lng + corner.x, analysisCenter.lat + corner.y],
+        label: `Building Corner ${i + 1}`
+      });
+    });
+    
+    setDetectedFeatures(detectedItems);
+    
+    // Calculate realistic areas based on building dimensions
+    const buildingFootprintSqFt = (buildingLengthDeg * 85000) * (buildingWidthDeg * 111000) * 10.764; // m² to ft²
+    const yardAreaSqFt = buildingFootprintSqFt * 2.5; // Yard typically 2-3x building footprint
     
     setAnalysisResults({
       dockDoorsDetected: dockCount,
       trailersDetected: trailerCount,
-      trucksDetected: facility.detectedTrucks || 15,
-      parkingSpotsEstimated: (facility.yardSpots || 50),
-      buildingFootprintSqFt: 150000 + Math.random() * 100000,
-      yardAreaSqFt: 300000 + Math.random() * 200000,
-      confidence: 0.78 + Math.random() * 0.15
+      trucksDetected: truckCount,
+      parkingSpotsEstimated: parkingSpots,
+      buildingFootprintSqFt: buildingFootprintSqFt,
+      yardAreaSqFt: yardAreaSqFt,
+      confidence: 0.82 + Math.random() * 0.12
     });
     
     setIsAnalyzing(false);
@@ -640,7 +772,7 @@ export default function SatelliteAnalysisPanel({
             </Marker>
 
             {/* Detected Features */}
-            {detectedFeatures.map(feature => (
+            {detectedFeatures.filter(f => f.type !== 'building').map(feature => (
               <Marker
                 key={feature.id}
                 longitude={feature.coordinates[0]}
@@ -649,9 +781,9 @@ export default function SatelliteAnalysisPanel({
               >
                 <div
                   style={{
-                    width: '12px',
-                    height: '12px',
-                    borderRadius: feature.type === 'trailer' ? '2px' : '50%',
+                    width: feature.type === 'parking' ? '8px' : '12px',
+                    height: feature.type === 'parking' ? '8px' : '12px',
+                    borderRadius: feature.type === 'trailer' || feature.type === 'truck' ? '2px' : '50%',
                     background: featureColors[feature.type] || '#fff',
                     border: '2px solid #fff',
                     boxShadow: `0 0 8px ${featureColors[feature.type]}`,
@@ -661,6 +793,42 @@ export default function SatelliteAnalysisPanel({
                 />
               </Marker>
             ))}
+
+            {/* Building Outline Polygon */}
+            {detectedFeatures.filter(f => f.type === 'building').length >= 4 && (
+              <Source
+                type="geojson"
+                data={{
+                  type: 'Feature',
+                  properties: {},
+                  geometry: {
+                    type: 'Polygon',
+                    coordinates: [[
+                      ...detectedFeatures
+                        .filter(f => f.type === 'building')
+                        .map(f => f.coordinates),
+                      detectedFeatures.filter(f => f.type === 'building')[0]?.coordinates // Close the polygon
+                    ].filter(Boolean)]
+                  }
+                }}
+              >
+                <Layer
+                  type="fill"
+                  paint={{
+                    'fill-color': '#6B7280',
+                    'fill-opacity': 0.15
+                  }}
+                />
+                <Layer
+                  type="line"
+                  paint={{
+                    'line-color': '#6B7280',
+                    'line-width': 2,
+                    'line-dasharray': [4, 2]
+                  }}
+                />
+              </Source>
+            )}
 
             {/* Measurement Line */}
             {measurePoints.length > 1 && (
@@ -712,16 +880,19 @@ export default function SatelliteAnalysisPanel({
           }}>
             <div style={{ fontSize: '0.65rem', color: '#64748B', marginBottom: '8px' }}>LEGEND</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {Object.entries(featureColors).slice(0, 4).map(([type, color]) => (
+              {Object.entries(featureColors).map(([type, color]) => (
                 <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <div style={{
                     width: '10px',
                     height: '10px',
-                    borderRadius: type === 'trailer' ? '2px' : '50%',
+                    borderRadius: type === 'trailer' || type === 'building' ? '2px' : '50%',
                     background: color
                   }} />
                   <span style={{ fontSize: '0.6rem', color: '#94A3B8', textTransform: 'capitalize' }}>
                     {type.replace('_', ' ')}
+                  </span>
+                  <span style={{ fontSize: '0.55rem', color: '#64748B' }}>
+                    ({detectedFeatures.filter(f => f.type === type).length})
                   </span>
                 </div>
               ))}
@@ -738,8 +909,8 @@ export default function SatelliteAnalysisPanel({
             borderRadius: '8px',
             padding: '12px'
           }}>
-            <div style={{ fontSize: '0.65rem', color: '#64748B', marginBottom: '8px' }}>ANNOTATIONS</div>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ fontSize: '0.65rem', color: '#64748B', marginBottom: '8px' }}>DETECTED FEATURES</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#10B981' }}>
                   {detectedFeatures.filter(f => f.type === 'dock_door').length}
@@ -753,10 +924,28 @@ export default function SatelliteAnalysisPanel({
                 <div style={{ fontSize: '0.55rem', color: '#64748B' }}>Trailers</div>
               </div>
               <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#3B82F6' }}>
+                  {detectedFeatures.filter(f => f.type === 'truck').length}
+                </div>
+                <div style={{ fontSize: '0.55rem', color: '#64748B' }}>Trucks</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#8B5CF6' }}>
+                  {detectedFeatures.filter(f => f.type === 'parking').length}
+                </div>
+                <div style={{ fontSize: '0.55rem', color: '#64748B' }}>Parking</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#EF4444' }}>
                   {detectedFeatures.filter(f => f.type === 'gate').length}
                 </div>
                 <div style={{ fontSize: '0.55rem', color: '#64748B' }}>Gates</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#6B7280' }}>
+                  {detectedFeatures.filter(f => f.type === 'building').length}
+                </div>
+                <div style={{ fontSize: '0.55rem', color: '#64748B' }}>Corners</div>
               </div>
             </div>
           </div>
