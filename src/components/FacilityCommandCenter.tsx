@@ -66,9 +66,17 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
   const [selectedWave, setSelectedWave] = useState<string | null>(null);
   const [showYardOps, setShowYardOps] = useState(false);
   const [showRiskPanel, setShowRiskPanel] = useState(false);
+  const [mapStyle, setMapStyle] = useState<'satellite' | 'streets' | 'dark'>('satellite');
   
   const stats = useMemo(() => getNetworkStats(), []);
   const riskAnalysis = useMemo(() => getNetworkRiskAnalysis(), []);
+  
+  // Map style URLs
+  const MAP_STYLES = {
+    satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
+    streets: 'mapbox://styles/mapbox/streets-v12',
+    dark: 'mapbox://styles/mapbox/dark-v11'
+  };
   
   // Filter and sort facilities
   const filteredFacilities = useMemo(() => {
@@ -923,17 +931,21 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
           {/* CENTER: Satellite View + Facility Analysis */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
             
-            {/* Satellite Map */}
+            {/* Map View */}
             <div style={{ flex: 1, position: 'relative' }}>
               <Map
-                longitude={selectedFacility.coordinates.lng}
-                latitude={selectedFacility.coordinates.lat}
-                zoom={17}
-                pitch={45}
-                mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
+                key={`${selectedFacility.id}-${mapStyle}`}
+                initialViewState={{
+                  longitude: selectedFacility.coordinates.lng,
+                  latitude: selectedFacility.coordinates.lat,
+                  zoom: 17,
+                  pitch: mapStyle === 'satellite' ? 45 : 0
+                }}
+                mapStyle={MAP_STYLES[mapStyle]}
                 mapboxAccessToken={MAPBOX_TOKEN}
                 style={{ width: '100%', height: '100%' }}
                 interactive={true}
+                reuseMaps={false}
               >
                 {/* Facility Marker */}
                 <Marker
@@ -959,6 +971,45 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                   </div>
                 </Marker>
               </Map>
+              
+              {/* Map Style Toggle */}
+              <div style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                display: 'flex',
+                background: 'rgba(10, 15, 25, 0.95)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                borderRadius: '8px',
+                padding: '4px',
+                gap: '4px'
+              }}>
+                {[
+                  { id: 'satellite', label: '🛰️ Satellite', icon: '🛰️' },
+                  { id: 'streets', label: '🗺️ Streets', icon: '🗺️' },
+                  { id: 'dark', label: '🌙 Dark', icon: '🌙' }
+                ].map(style => (
+                  <button
+                    key={style.id}
+                    onClick={() => setMapStyle(style.id as typeof mapStyle)}
+                    style={{
+                      padding: '6px 10px',
+                      background: mapStyle === style.id ? 'rgba(59, 130, 246, 0.3)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      color: mapStyle === style.id ? '#60A5FA' : '#64748B',
+                      fontSize: '0.65rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    {style.icon}
+                  </button>
+                ))}
+              </div>
               
               {/* Facility Name Overlay */}
               <div style={{
