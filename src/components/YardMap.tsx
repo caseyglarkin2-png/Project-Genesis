@@ -447,6 +447,8 @@ export default function YardMap() {
   const [showNetwork, setShowNetwork] = useState(false);
   const [showAdoptionLeaderboard, setShowAdoptionLeaderboard] = useState(false);
   const [showNorthAmericaMap, setShowNorthAmericaMap] = useState(false);
+  const [showFacilitySelector, setShowFacilitySelector] = useState(false);
+  const [selectedFacility, setSelectedFacility] = useState(PRIMO_FACILITIES[0]); // Default to first facility
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [logoClicks, setLogoClicks] = useState(0);
   const [scoreData, setScoreData] = useState<ScoreData>({ 
@@ -462,8 +464,8 @@ export default function YardMap() {
     { id: 4, text: '✓ TRL-44101 departed', time: '8m ago', color: '#00ff00' },
   ]);
   const [viewState, setViewState] = useState({
-    longitude: -78.789,
-    latitude: 34.754,
+    longitude: PRIMO_FACILITIES[0].coordinates.lng,
+    latitude: PRIMO_FACILITIES[0].coordinates.lat,
     zoom: 18,
     pitch: 45
   });
@@ -791,6 +793,159 @@ export default function YardMap() {
         >
           ◆ Leaderboard
         </button>
+        
+        {/* Facility Selector Dropdown */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowFacilitySelector(!showFacilitySelector)}
+            style={{
+              background: 'rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              color: '#10B981',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontFamily: '"Inter", -apple-system, sans-serif',
+              fontSize: '0.7rem',
+              fontWeight: '600',
+              letterSpacing: '0.5px',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            📍 {selectedFacility?.name?.split(' - ')[0] || 'Select Facility'} ▾
+          </button>
+          
+          {showFacilitySelector && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              marginTop: '8px',
+              background: 'rgba(15, 23, 42, 0.98)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '12px',
+              padding: '12px',
+              maxHeight: '400px',
+              width: '350px',
+              overflowY: 'auto',
+              zIndex: 2000,
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)'
+            }}>
+              <div style={{ 
+                color: '#10B981', 
+                fontSize: '0.75rem', 
+                fontWeight: '700', 
+                marginBottom: '10px',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                borderBottom: '1px solid rgba(16, 185, 129, 0.2)',
+                paddingBottom: '8px'
+              }}>
+                Jump to Facility ({PRIMO_FACILITIES.length} locations)
+              </div>
+              
+              {/* Quick Filter - Show deployed facilities first */}
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ color: '#94A3B8', fontSize: '0.65rem', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  🟢 Live Facilities
+                </div>
+                {PRIMO_FACILITIES.filter(f => ['champion', 'full', 'partial', 'pilot'].includes(f.adoptionStatus)).map(facility => (
+                  <button
+                    key={facility.id}
+                    onClick={() => {
+                      setSelectedFacility(facility);
+                      setShowFacilitySelector(false);
+                      // Fly to the facility
+                      setViewState(prev => ({
+                        ...prev,
+                        longitude: facility.coordinates.lng,
+                        latitude: facility.coordinates.lat,
+                        zoom: 18,
+                        pitch: 45
+                      }));
+                    }}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'left',
+                      background: selectedFacility?.id === facility.id ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+                      border: 'none',
+                      color: '#E2E8F0',
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      marginBottom: '4px',
+                      fontSize: '0.75rem',
+                      transition: 'background 0.2s ease'
+                    }}
+                  >
+                    <span style={{ 
+                      color: facility.adoptionStatus === 'champion' ? '#FFD700' : 
+                             facility.adoptionStatus === 'full' ? '#10B981' : 
+                             facility.adoptionStatus === 'partial' ? '#3B82F6' : '#F59E0B',
+                      marginRight: '8px'
+                    }}>
+                      {facility.adoptionStatus === 'champion' ? '★' : '●'}
+                    </span>
+                    {facility.name}
+                    <span style={{ color: '#64748B', fontSize: '0.65rem', marginLeft: '8px' }}>
+                      {facility.region}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              
+              <div style={{ borderTop: '1px solid rgba(71, 85, 105, 0.3)', paddingTop: '10px', marginTop: '10px' }}>
+                <div style={{ color: '#94A3B8', fontSize: '0.65rem', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  ⚪ Other Facilities
+                </div>
+                {PRIMO_FACILITIES.filter(f => f.adoptionStatus === 'not_started').slice(0, 20).map(facility => (
+                  <button
+                    key={facility.id}
+                    onClick={() => {
+                      setSelectedFacility(facility);
+                      setShowFacilitySelector(false);
+                      setViewState(prev => ({
+                        ...prev,
+                        longitude: facility.coordinates.lng,
+                        latitude: facility.coordinates.lat,
+                        zoom: 18,
+                        pitch: 45
+                      }));
+                    }}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'left',
+                      background: selectedFacility?.id === facility.id ? 'rgba(100, 116, 139, 0.2)' : 'transparent',
+                      border: 'none',
+                      color: '#94A3B8',
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      marginBottom: '4px',
+                      fontSize: '0.75rem',
+                      transition: 'background 0.2s ease'
+                    }}
+                  >
+                    ○ {facility.name}
+                    <span style={{ color: '#475569', fontSize: '0.65rem', marginLeft: '8px' }}>
+                      {facility.region}
+                    </span>
+                  </button>
+                ))}
+                <div style={{ color: '#475569', fontSize: '0.65rem', textAlign: 'center', marginTop: '8px' }}>
+                  +{PRIMO_FACILITIES.filter(f => f.adoptionStatus === 'not_started').length - 20} more facilities...
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
           style={{
@@ -1136,6 +1291,194 @@ export default function YardMap() {
       }}>
         ↑↑↓↓←→←→BA
       </div>
+      
+      {/* Selected Facility Info Card - Top Left */}
+      {selectedFacility && (
+        <div style={{
+          position: 'absolute',
+          top: 140,
+          left: 20,
+          background: 'rgba(15, 23, 42, 0.95)',
+          border: '1px solid rgba(16, 185, 129, 0.3)',
+          borderRadius: '12px',
+          padding: '16px',
+          minWidth: '260px',
+          maxWidth: '300px',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4)',
+          zIndex: 1000,
+          animation: 'slideInLeft 0.3s ease-out'
+        }}>
+          {/* Facility Header */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'flex-start',
+            marginBottom: '12px'
+          }}>
+            <div>
+              <div style={{ 
+                color: '#10B981', 
+                fontSize: '0.65rem', 
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                fontWeight: '600',
+                marginBottom: '4px'
+              }}>
+                📍 Current Location
+              </div>
+              <div style={{ 
+                color: '#F1F5F9', 
+                fontSize: '0.9rem', 
+                fontWeight: '700',
+                lineHeight: '1.3'
+              }}>
+                {selectedFacility.name}
+              </div>
+            </div>
+            <span style={{
+              fontSize: '0.6rem',
+              fontWeight: '600',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              background: selectedFacility.adoptionStatus === 'champion' ? 'rgba(255, 215, 0, 0.15)' :
+                          selectedFacility.adoptionStatus === 'full' ? 'rgba(16, 185, 129, 0.15)' :
+                          selectedFacility.adoptionStatus === 'partial' ? 'rgba(59, 130, 246, 0.15)' :
+                          selectedFacility.adoptionStatus === 'pilot' ? 'rgba(245, 158, 11, 0.15)' :
+                          'rgba(100, 116, 139, 0.15)',
+              color: selectedFacility.adoptionStatus === 'champion' ? '#FFD700' :
+                     selectedFacility.adoptionStatus === 'full' ? '#10B981' :
+                     selectedFacility.adoptionStatus === 'partial' ? '#3B82F6' :
+                     selectedFacility.adoptionStatus === 'pilot' ? '#F59E0B' :
+                     '#64748B',
+              border: `1px solid ${
+                selectedFacility.adoptionStatus === 'champion' ? 'rgba(255, 215, 0, 0.3)' :
+                selectedFacility.adoptionStatus === 'full' ? 'rgba(16, 185, 129, 0.3)' :
+                selectedFacility.adoptionStatus === 'partial' ? 'rgba(59, 130, 246, 0.3)' :
+                selectedFacility.adoptionStatus === 'pilot' ? 'rgba(245, 158, 11, 0.3)' :
+                'rgba(100, 116, 139, 0.3)'
+              }`,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              {selectedFacility.adoptionStatus === 'champion' ? '★ CHAMPION' :
+               selectedFacility.adoptionStatus === 'full' ? '● LIVE' :
+               selectedFacility.adoptionStatus === 'partial' ? '◐ PARTIAL' :
+               selectedFacility.adoptionStatus === 'pilot' ? '◌ PILOT' :
+               '○ PENDING'}
+            </span>
+          </div>
+          
+          <div style={{ 
+            color: '#64748B', 
+            fontSize: '0.7rem', 
+            marginBottom: '12px',
+            display: 'flex',
+            gap: '12px'
+          }}>
+            <span>{selectedFacility.region}</span>
+            <span>•</span>
+            <span>{selectedFacility.coordinates.lat.toFixed(4)}°, {selectedFacility.coordinates.lng.toFixed(4)}°</span>
+          </div>
+          
+          {/* Metrics Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '10px',
+            padding: '12px',
+            background: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255, 255, 255, 0.05)'
+          }}>
+            <div>
+              <div style={{ color: '#64748B', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                YVS Score
+              </div>
+              <div style={{ 
+                color: selectedFacility.yvsScore >= 80 ? '#10B981' : selectedFacility.yvsScore >= 60 ? '#F59E0B' : '#EF4444',
+                fontSize: '1.1rem', 
+                fontWeight: '700' 
+              }}>
+                {selectedFacility.yvsScore}/100
+              </div>
+            </div>
+            <div>
+              <div style={{ color: '#64748B', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                Trucks/Day
+              </div>
+              <div style={{ color: '#E2E8F0', fontSize: '1.1rem', fontWeight: '700' }}>
+                {selectedFacility.trucksPerDay}
+              </div>
+            </div>
+            <div>
+              <div style={{ color: '#64748B', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                Avg Turn Time
+              </div>
+              <div style={{ color: '#E2E8F0', fontSize: '1.1rem', fontWeight: '700' }}>
+                {selectedFacility.avgTurnTime}min
+              </div>
+            </div>
+            <div>
+              <div style={{ color: '#64748B', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                Annual ROI
+              </div>
+              <div style={{ color: '#10B981', fontSize: '1.1rem', fontWeight: '700' }}>
+                ${(selectedFacility.projectedAnnualROI / 1000).toFixed(0)}K
+              </div>
+            </div>
+          </div>
+          
+          {/* Quick Actions */}
+          <div style={{ 
+            marginTop: '12px', 
+            paddingTop: '12px', 
+            borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+            display: 'flex',
+            gap: '8px'
+          }}>
+            <button
+              onClick={() => {
+                setViewState(prev => ({ ...prev, zoom: prev.zoom + 1 }));
+              }}
+              style={{
+                flex: 1,
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                color: '#3B82F6',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.65rem',
+                fontWeight: '600'
+              }}
+            >
+              🔍 Zoom In
+            </button>
+            <button
+              onClick={() => {
+                setViewState(prev => ({ 
+                  ...prev, 
+                  pitch: prev.pitch === 45 ? 0 : 45 
+                }));
+              }}
+              style={{
+                flex: 1,
+                background: 'rgba(168, 85, 247, 0.1)',
+                border: '1px solid rgba(168, 85, 247, 0.3)',
+                color: '#A855F7',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.65rem',
+                fontWeight: '600'
+              }}
+            >
+              🎯 Toggle 3D
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* ROI Calculator Modal */}
       {showROI && (
