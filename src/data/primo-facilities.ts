@@ -61,6 +61,176 @@ export interface PrimoFacility {
 }
 
 // =============================================================================
+// RISK SCORING & COMPETITIVE ANALYSIS (Phiroz Methodology)
+// =============================================================================
+
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type CompetitorThreat = 'NONE' | 'LOW' | 'MEDIUM' | 'HIGH' | 'ACTIVE';
+
+export interface FacilityRiskProfile {
+  overallRisk: RiskLevel;
+  riskScore: number; // 0-100, higher = more risk
+  factors: {
+    lowYVS: boolean;           // YVS < 50 = integration risk
+    highTurnTime: boolean;     // avgTurnTime > 45 = operational chaos
+    complexLayout: boolean;    // gateNodes > 3 OR yardSpots > 30
+    highVolume: boolean;       // trucksPerDay > 60 = high stakes
+    paperHeavy: boolean;       // paperDocuments > 10 = change management risk
+  };
+  competitorThreat: CompetitorThreat;
+  activeCompetitors: string[];
+  implementationWeeks: number; // Estimated weeks to deploy
+  fieldEngineersNeeded: number;
+}
+
+// Competitor profiles - know thy enemy
+export const COMPETITORS = {
+  vector: {
+    name: 'Vector',
+    focus: 'Paperless BOL',
+    threat: 'HIGH',
+    description: 'Incumbent in paperless BOL space. Strong carrier network. Main threat for YES adoption.',
+    weaknesses: ['No yard management', 'Limited visibility', 'Carrier-centric not shipper-centric'],
+    facilities_at_risk: 'High paper document facilities'
+  },
+  blueyonder: {
+    name: 'Blue Yonder',
+    focus: 'Enterprise TMS/WMS',
+    threat: 'MEDIUM',
+    description: 'Enterprise suite play. Sells YMS as add-on to WMS customers.',
+    weaknesses: ['Expensive', 'Long implementation', 'Over-engineered for mid-market'],
+    facilities_at_risk: 'Large distribution centers with existing BY WMS'
+  },
+  fourkites: {
+    name: 'FourKites',
+    focus: 'Visibility Platform',
+    threat: 'MEDIUM',
+    description: 'Real-time visibility. Expanding into yard. Partnership risk.',
+    weaknesses: ['Visibility only, no execution', 'No driver workflow', 'API-heavy integration burden'],
+    facilities_at_risk: 'Facilities wanting visibility without YMS commitment'
+  },
+  descartes: {
+    name: 'Descartes',
+    focus: 'Customs/Compliance + MacroPoint',
+    threat: 'LOW',
+    description: 'Strong in customs, MacroPoint for tracking. Limited yard focus.',
+    weaknesses: ['Fragmented products', 'Acquisition bloat', 'Poor UX'],
+    facilities_at_risk: 'Cross-border facilities'
+  },
+  trimble: {
+    name: 'Trimble',
+    focus: 'Fleet/Transportation',
+    threat: 'LOW', 
+    description: 'Fleet management heritage. TMW acquisition.',
+    weaknesses: ['Carrier-focused', 'Legacy systems', 'Not shipper-centric'],
+    facilities_at_risk: 'Facilities with Trimble fleet customers'
+  }
+} as const;
+
+// Calculate risk profile for a facility
+export function calculateRiskProfile(facility: PrimoFacility): FacilityRiskProfile {
+  const factors = {
+    lowYVS: facility.yvsScore < 50,
+    highTurnTime: facility.avgTurnTime > 45,
+    complexLayout: facility.gateNodes > 3 || facility.yardSpots > 30,
+    highVolume: facility.trucksPerDay > 60,
+    paperHeavy: facility.paperDocuments > 10
+  };
+  
+  // Calculate risk score (0-100)
+  let riskScore = 0;
+  if (factors.lowYVS) riskScore += 25;
+  if (factors.highTurnTime) riskScore += 20;
+  if (factors.complexLayout) riskScore += 20;
+  if (factors.highVolume) riskScore += 15;
+  if (factors.paperHeavy) riskScore += 20;
+  
+  // Determine overall risk level
+  const overallRisk: RiskLevel = 
+    riskScore >= 70 ? 'CRITICAL' :
+    riskScore >= 50 ? 'HIGH' :
+    riskScore >= 30 ? 'MEDIUM' : 'LOW';
+  
+  // Competitive threat analysis
+  const activeCompetitors: string[] = [];
+  let threatLevel: CompetitorThreat = 'NONE';
+  
+  // Vector threat: High paper facilities
+  if (facility.paperDocuments > 8) {
+    activeCompetitors.push('Vector');
+    threatLevel = 'HIGH';
+  }
+  
+  // Blue Yonder threat: Large DCs
+  if (facility.type === 'distribution' && facility.dockDoors > 15) {
+    activeCompetitors.push('Blue Yonder');
+    if (threatLevel === 'NONE') threatLevel = 'MEDIUM';
+  }
+  
+  // FourKites threat: High volume needing visibility
+  if (facility.trucksPerDay > 50 && !facility.hasYMS) {
+    activeCompetitors.push('FourKites');
+    if (threatLevel === 'NONE') threatLevel = 'MEDIUM';
+  }
+  
+  // If facility is already live, threat is minimal
+  if (facility.hasYES || facility.hasYMS) {
+    threatLevel = 'NONE';
+    activeCompetitors.length = 0;
+  }
+  
+  // Implementation complexity
+  const baseWeeks = 2;
+  const complexityWeeks = 
+    (factors.complexLayout ? 2 : 0) +
+    (factors.highVolume ? 1 : 0) +
+    (factors.paperHeavy ? 1 : 0) +
+    (facility.dockDoors > 12 ? 1 : 0);
+  const implementationWeeks = baseWeeks + complexityWeeks;
+  
+  // Field engineers needed (1 per 8 dock doors, min 1, max 4)
+  const fieldEngineersNeeded = Math.min(4, Math.max(1, Math.ceil(facility.dockDoors / 8)));
+  
+  return {
+    overallRisk,
+    riskScore,
+    factors,
+    competitorThreat: threatLevel,
+    activeCompetitors,
+    implementationWeeks,
+    fieldEngineersNeeded
+  };
+}
+
+// Get network-wide risk and competitive analysis
+export function getNetworkRiskAnalysis() {
+  const notStarted = PRIMO_FACILITIES.filter(f => f.adoptionStatus === 'not_started');
+  const profiles = notStarted.map(f => ({ facility: f, risk: calculateRiskProfile(f) }));
+  
+  const criticalRisk = profiles.filter(p => p.risk.overallRisk === 'CRITICAL');
+  const highRisk = profiles.filter(p => p.risk.overallRisk === 'HIGH');
+  const vectorThreat = profiles.filter(p => p.risk.activeCompetitors.includes('Vector'));
+  const blueYonderThreat = profiles.filter(p => p.risk.activeCompetitors.includes('Blue Yonder'));
+  const fourKitesThreat = profiles.filter(p => p.risk.activeCompetitors.includes('FourKites'));
+  
+  const totalFieldEngineers = profiles.reduce((sum, p) => sum + p.risk.fieldEngineersNeeded, 0);
+  const totalImplementationWeeks = profiles.reduce((sum, p) => sum + p.risk.implementationWeeks, 0);
+  
+  return {
+    totalPending: notStarted.length,
+    criticalRisk: criticalRisk.length,
+    highRisk: highRisk.length,
+    vectorThreat: vectorThreat.length,
+    blueYonderThreat: blueYonderThreat.length,
+    fourKitesThreat: fourKitesThreat.length,
+    totalFieldEngineers,
+    avgImplementationWeeks: Math.round(totalImplementationWeeks / notStarted.length * 10) / 10,
+    atRiskROI: vectorThreat.concat(blueYonderThreat, fourKitesThreat)
+      .reduce((sum, p) => sum + p.facility.projectedAnnualROI, 0)
+  };
+}
+
+// =============================================================================
 // PRIMO BRANDS FACILITIES - FreightRoll 5-Year Contract
 // =============================================================================
 

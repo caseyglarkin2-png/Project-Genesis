@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import Map, { Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { PRIMO_FACILITIES, PrimoFacility, getNetworkStats } from '../data/primo-facilities';
+import { PRIMO_FACILITIES, PrimoFacility, getNetworkStats, calculateRiskProfile, getNetworkRiskAnalysis } from '../data/primo-facilities';
 import YardOperationsView from './YardOperationsView';
+import RiskCompetitivePanel from './RiskCompetitivePanel';
 
 /**
  * =============================================================================
@@ -64,8 +65,10 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
   const [viewMode, setViewMode] = useState<'facility' | 'waves'>('facility');
   const [selectedWave, setSelectedWave] = useState<string | null>(null);
   const [showYardOps, setShowYardOps] = useState(false);
+  const [showRiskPanel, setShowRiskPanel] = useState(false);
   
   const stats = useMemo(() => getNetworkStats(), []);
+  const riskAnalysis = useMemo(() => getNetworkRiskAnalysis(), []);
   
   // Filter and sort facilities
   const filteredFacilities = useMemo(() => {
@@ -319,6 +322,41 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                 Awaiting Deployment
               </div>
             </div>
+            
+            {/* Risk & Competitive Intel Button */}
+            <button
+              onClick={() => setShowRiskPanel(true)}
+              style={{
+                background: riskAnalysis.vectorThreat > 0 
+                  ? 'rgba(239, 68, 68, 0.15)' 
+                  : 'rgba(245, 158, 11, 0.1)',
+                border: `1px solid ${riskAnalysis.vectorThreat > 0 ? 'rgba(239, 68, 68, 0.4)' : 'rgba(245, 158, 11, 0.3)'}`,
+                color: riskAnalysis.vectorThreat > 0 ? '#EF4444' : '#F59E0B',
+                padding: '8px 14px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.7rem',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              ⚔️ Risk/Intel
+              {riskAnalysis.vectorThreat > 0 && (
+                <span style={{
+                  background: '#EF4444',
+                  color: '#fff',
+                  fontSize: '0.55rem',
+                  padding: '2px 5px',
+                  borderRadius: '4px',
+                  fontWeight: '700'
+                }}>
+                  {riskAnalysis.vectorThreat}
+                </span>
+              )}
+            </button>
+            
             <button
               onClick={onClose}
               style={{
@@ -784,6 +822,7 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
               {filteredFacilities.map(facility => {
                 const status = STATUS_CONFIG[facility.adoptionStatus];
                 const isSelected = facility.id === selectedFacility.id;
+                const riskProfile = facility.adoptionStatus === 'not_started' ? calculateRiskProfile(facility) : null;
                 
                 return (
                   <div
@@ -804,9 +843,24 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                           fontSize: '0.8rem', 
                           fontWeight: '600', 
                           color: '#E2E8F0',
-                          marginBottom: '2px'
+                          marginBottom: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
                         }}>
                           {facility.name}
+                          {riskProfile && riskProfile.activeCompetitors.length > 0 && (
+                            <span style={{
+                              fontSize: '0.5rem',
+                              padding: '1px 4px',
+                              background: 'rgba(239, 68, 68, 0.2)',
+                              color: '#EF4444',
+                              borderRadius: '3px',
+                              fontWeight: '700'
+                            }}>
+                              ⚔️ {riskProfile.activeCompetitors[0]}
+                            </span>
+                          )}
                         </div>
                         <div style={{ fontSize: '0.7rem', color: '#64748B' }}>
                           {facility.location}
@@ -840,6 +894,14 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                       <span style={{ color: '#64748B' }}>
                         {facility.trucksPerDay}/day
                       </span>
+                      {riskProfile && riskProfile.overallRisk !== 'LOW' && (
+                        <span style={{ 
+                          color: riskProfile.overallRisk === 'CRITICAL' ? '#DC2626' :
+                                 riskProfile.overallRisk === 'HIGH' ? '#EF4444' : '#F59E0B'
+                        }}>
+                          ⚠️ {riskProfile.overallRisk}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -1345,6 +1407,17 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
         <YardOperationsView 
           facility={selectedFacility}
           onClose={() => setShowYardOps(false)}
+        />
+      )}
+      
+      {/* Risk & Competitive Intelligence Panel */}
+      {showRiskPanel && (
+        <RiskCompetitivePanel
+          onSelectFacility={(facility) => {
+            setSelectedFacility(facility);
+            setShowRiskPanel(false);
+          }}
+          onClose={() => setShowRiskPanel(false)}
         />
       )}
     </>
