@@ -4,6 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { PRIMO_FACILITIES, PrimoFacility, getNetworkStats, calculateRiskProfile, getNetworkRiskAnalysis } from '../data/primo-facilities';
 import YardOperationsView from './YardOperationsView';
 import RiskCompetitivePanel from './RiskCompetitivePanel';
+import CoordinateValidatorPanel from './CoordinateValidatorPanel';
 
 /**
  * =============================================================================
@@ -66,6 +67,7 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
   const [selectedWave, setSelectedWave] = useState<string | null>(null);
   const [showYardOps, setShowYardOps] = useState(false);
   const [showRiskPanel, setShowRiskPanel] = useState(false);
+  const [showCoordValidator, setShowCoordValidator] = useState(false);
   const [mapStyle, setMapStyle] = useState<'satellite' | 'streets' | 'dark'>('satellite');
   
   const stats = useMemo(() => getNetworkStats(), []);
@@ -363,6 +365,26 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
                   {riskAnalysis.vectorThreat}
                 </span>
               )}
+            </button>
+            
+            {/* Coordinate Validator Button */}
+            <button
+              onClick={() => setShowCoordValidator(true)}
+              style={{
+                background: 'rgba(139, 92, 246, 0.15)',
+                border: '1px solid rgba(139, 92, 246, 0.4)',
+                color: '#A855F7',
+                padding: '8px 14px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.7rem',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              📍 Validate Coords
             </button>
             
             <button
@@ -1469,6 +1491,17 @@ export default function FacilityCommandCenter({ onClose, initialFacility }: Faci
             setShowRiskPanel(false);
           }}
           onClose={() => setShowRiskPanel(false)}
+        />
+      )}
+      
+      {/* Coordinate Validator Panel */}
+      {showCoordValidator && (
+        <CoordinateValidatorPanel
+          onSelectFacility={(facility) => {
+            setSelectedFacility(facility);
+            setShowCoordValidator(false);
+          }}
+          onClose={() => setShowCoordValidator(false)}
         />
       )}
     </>
