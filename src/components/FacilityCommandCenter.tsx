@@ -24,7 +24,7 @@ import RiskCompetitivePanel from './RiskCompetitivePanel';
  * [Facility List] | [Satellite + Analysis] | [Action Panel]
  */
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiY2dsYXJraW40MTAiLCJhIjoiY21qN3R1dDc2MDBidjNlcTc1ZjVjcXJ0OSJ9.mSsGQbC0253Lhf9kTmIp_Q';
 
 // Quick status colors
 const STATUS_CONFIG = {
