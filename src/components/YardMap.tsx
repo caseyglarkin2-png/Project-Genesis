@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import Map, { MapRef, useMap } from 'react-map-gl/mapbox';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import mapboxgl from 'mapbox-gl';
@@ -12,6 +12,8 @@ import TeamInvitation from './TeamInvitation';
 import ROICalculator from './ROICalculator';
 import NetworkMap from './NetworkMap';
 import AdoptionLeaderboard from './AdoptionLeaderboard';
+import NorthAmericaMap from './NorthAmericaMap';
+import { getNetworkStats, PRIMO_FACILITIES } from '../data/primo-facilities';
 
 // MAPBOX TOKEN REQUIRED HERE
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -444,6 +446,7 @@ export default function YardMap() {
   const [showROI, setShowROI] = useState(false);
   const [showNetwork, setShowNetwork] = useState(false);
   const [showAdoptionLeaderboard, setShowAdoptionLeaderboard] = useState(false);
+  const [showNorthAmericaMap, setShowNorthAmericaMap] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [logoClicks, setLogoClicks] = useState(0);
   const [scoreData, setScoreData] = useState<ScoreData>({ 
@@ -634,19 +637,24 @@ export default function YardMap() {
           fontSize: '0.65rem',
           fontWeight: '500'
         }}>
-          {[1, 2].map((_, idx) => (
+          {[1, 2].map((_, idx) => {
+            const stats = getNetworkStats();
+            const totalTrailers = PRIMO_FACILITIES.reduce((sum, f) => sum + f.detectedTrailers, 0);
+            const totalGhosts = PRIMO_FACILITIES.filter(f => f.adoptionStatus !== 'not_started').reduce((sum, f) => sum + f.ghostSearches, 0);
+            return (
             <div key={idx} style={{ display: 'flex', gap: '40px', paddingRight: '40px' }}>
-              <span style={{ color: '#3B82F6' }}>◈ ORCHESTRATION STATUS</span>
-              <span style={{ color: '#64748B' }}>Facilities Online: <span style={{ color: '#10B981' }}>847</span></span>
-              <span style={{ color: '#64748B' }}>Active Trailers: <span style={{ color: '#3B82F6' }}>12,459</span></span>
-              <span style={{ color: '#64748B' }}>Avg Turn Time: <span style={{ color: '#F59E0B' }}>26.4 min</span></span>
-              <span style={{ color: '#64748B' }}>Autonomous Handoffs: <span style={{ color: '#60A5FA' }}>3,291</span></span>
-              <span style={{ color: '#64748B' }}>Network YVS: <span style={{ color: '#10B981' }}>78.2</span></span>
-              <span style={{ color: '#64748B' }}>Daily Moves: <span style={{ color: '#3B82F6' }}>45,892</span></span>
-              <span style={{ color: '#64748B' }}>Untracked: <span style={{ color: '#F97316' }}>142</span></span>
-              <span style={{ color: '#10B981' }}>▲ +2.1% WoW</span>
+              <span style={{ color: '#3B82F6' }}>◈ PRIMO BRANDS NETWORK</span>
+              <span style={{ color: '#64748B' }}>Facilities Live: <span style={{ color: '#10B981' }}>{stats.adoptedFacilities}/{stats.totalFacilities}</span></span>
+              <span style={{ color: '#64748B' }}>Adoption: <span style={{ color: '#3B82F6' }}>{stats.adoptionRate}%</span></span>
+              <span style={{ color: '#64748B' }}>Avg Turn Time: <span style={{ color: '#F59E0B' }}>{Math.round(PRIMO_FACILITIES.filter(f => f.adoptionStatus !== 'not_started').reduce((sum, f) => sum + f.avgTurnTime, 0) / stats.adoptedFacilities)} min</span></span>
+              <span style={{ color: '#64748B' }}>Daily Trucks: <span style={{ color: '#60A5FA' }}>{stats.totalTrucksPerDay.toLocaleString()}</span></span>
+              <span style={{ color: '#64748B' }}>Network YVS: <span style={{ color: '#10B981' }}>{stats.avgYVS}</span></span>
+              <span style={{ color: '#64748B' }}>Trailers: <span style={{ color: '#3B82F6' }}>{totalTrailers.toLocaleString()}</span></span>
+              <span style={{ color: '#64748B' }}>Untracked: <span style={{ color: totalGhosts > 50 ? '#F97316' : '#10B981' }}>{totalGhosts}</span></span>
+              <span style={{ color: '#10B981' }}>▲ +{stats.avgTurnTimeImprovement}% improvement</span>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       
@@ -745,6 +753,25 @@ export default function YardMap() {
           }}
         >
           ⬡ Primo Network
+        </button>
+        <button
+          onClick={() => setShowNorthAmericaMap(true)}
+          style={{
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%)',
+            border: '1px solid rgba(59, 130, 246, 0.4)',
+            color: '#60A5FA',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: '"Inter", -apple-system, sans-serif',
+            fontSize: '0.7rem',
+            fontWeight: '600',
+            letterSpacing: '0.5px',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 0 12px rgba(59, 130, 246, 0.2)'
+          }}
+        >
+          🗺️ NA Network Map
         </button>
         <button
           onClick={() => setShowAdoptionLeaderboard(true)}
@@ -1118,6 +1145,11 @@ export default function YardMap() {
       {/* Network Map Modal */}
       {showNetwork && (
         <NetworkMap onClose={() => setShowNetwork(false)} />
+      )}
+      
+      {/* North America Map Modal */}
+      {showNorthAmericaMap && (
+        <NorthAmericaMap onClose={() => setShowNorthAmericaMap(false)} />
       )}
       
       {/* Adoption Leaderboard Modal */}

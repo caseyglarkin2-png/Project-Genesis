@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
+import { 
+  PRIMO_FACILITIES, 
+  getLeaderboard,
+  getNetworkStats,
+  getAdoptionLabel
+} from '../data/primo-facilities';
 
 /**
  * =============================================================================
  * LEADERBOARD COMPONENT - Network Velocity Dashboard
  * =============================================================================
  * 
- * Displays the facility performance leaderboard across the network.
+ * Displays the facility performance leaderboard across the Primo Brands network.
  * Industrial Fluidity design - operating system aesthetic.
+ * 
+ * LIVE DATA from 260 Primo Brands facilities under FreightRoll deployment.
  * 
  * SCORE INTERPRETATION:
  * - 80-100 (GREEN):  ◆ WHALE - Top performer, minimal friction
@@ -15,24 +23,6 @@ import React, { useState } from 'react';
  * 
  * NO FRICTION - Autonomous Orchestration at scale.
  */
-
-type Facility = {
-  id: string;
-  name: string;
-  score: number;
-  tier: 'Local' | 'Regional' | 'Network';
-  trend: 'up' | 'down' | 'stable';
-  turnTime?: number; // Average minutes per truck turn
-  ghostCount?: number; // Number of "lost" assets
-};
-
-const MOCK_LEADERBOARD: Facility[] = [
-  { id: '1', name: 'Jacksonville DC (You)', score: 75.5, tier: 'Local', trend: 'up', turnTime: 28, ghostCount: 2 },
-  { id: '2', name: 'Savannah Port Terminal', score: 82.1, tier: 'Regional', trend: 'stable', turnTime: 24, ghostCount: 0 },
-  { id: '3', name: 'Atlanta Distribution', score: 68.4, tier: 'Regional', trend: 'down', turnTime: 32, ghostCount: 5 },
-  { id: '4', name: 'Miami Cold Storage', score: 91.0, tier: 'Network', trend: 'up', turnTime: 22, ghostCount: 0 },
-  { id: '5', name: 'Charlotte Hub', score: 55.2, tier: 'Regional', trend: 'down', turnTime: 38, ghostCount: 8 },
-];
 
 // Score color coding based on classification thresholds
 const getScoreColor = (score: number): string => {
@@ -47,17 +37,22 @@ const getScoreEmoji = (score: number): string => {
   return '◁';
 };
 
-const getScoreLabel = (score: number): string => {
-  if (score >= 80) return 'WHALE';
-  if (score >= 50) return 'STANDARD';
-  return 'LOW';
+const getTrendData = (facility: typeof PRIMO_FACILITIES[0]) => {
+  // Calculate trend based on adoption status and improvements
+  if (facility.adoptionStatus === 'champion' || facility.turnTimeImprovement >= 50) {
+    return { direction: 'up' as const, change: '+' + (facility.turnTimeImprovement / 10).toFixed(1) };
+  } else if (facility.adoptionStatus === 'not_started' || facility.turnTimeImprovement < 20) {
+    return { direction: 'down' as const, change: '-' + ((100 - facility.yvsScore) / 20).toFixed(1) };
+  }
+  return { direction: 'stable' as const, change: '0.0' };
 };
 
 export default function Leaderboard() {
   const [showLegend, setShowLegend] = useState(false);
   
-  // Sort by score descending
-  const sortedData = [...MOCK_LEADERBOARD].sort((a, b) => b.score - a.score);
+  // Get real data from Primo facilities
+  const stats = getNetworkStats();
+  const leaderboard = getLeaderboard('yvs').slice(0, 8); // Top 8 by YVS score
 
   return (
     <div style={{
@@ -98,7 +93,7 @@ export default function Leaderboard() {
           gap: '8px'
         }}>
           <span style={{ fontSize: '1rem' }}>◈</span>
-          Network Velocity
+          Primo Network
         </h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button 
@@ -126,7 +121,7 @@ export default function Leaderboard() {
             alignItems: 'center', 
             gap: '4px'
           }}>
-            <span style={{ animation: 'pulse 2s infinite' }}>●</span> LIVE
+            <span style={{ animation: 'pulse 2s infinite' }}>●</span> {stats.adoptedFacilities} LIVE
           </span>
         </div>
       </div>
@@ -139,33 +134,34 @@ export default function Leaderboard() {
           background: 'rgba(10, 14, 20, 0.6)',
           fontSize: '0.7rem'
         }}>
-          <div style={{ marginBottom: '8px', color: '#94A3B8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>Yard Velocity Score</div>
+          <div style={{ marginBottom: '8px', color: '#94A3B8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>Primo Brands Network</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#E2E8F0' }}>
-              <span style={{ color: '#10B981', fontWeight: '600' }}>80-100</span>
-              <span>◆ WHALE - Top performer, minimal friction</span>
+              <span style={{ color: '#10B981', fontWeight: '600' }}>{stats.fullAdoptionFacilities}</span>
+              <span>Facilities fully deployed (YES + YMS)</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#E2E8F0' }}>
-              <span style={{ color: '#F59E0B', fontWeight: '600' }}>50-79</span>
-              <span>◇ STANDARD - Good, room to optimize</span>
+              <span style={{ color: '#3B82F6', fontWeight: '600' }}>{stats.adoptedFacilities}</span>
+              <span>Total facilities in deployment</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#E2E8F0' }}>
-              <span style={{ color: '#EF4444', fontWeight: '600' }}>0-49</span>
-              <span>◁ LOW - Needs immediate attention</span>
+              <span style={{ color: '#64748B', fontWeight: '600' }}>{stats.totalFacilities - stats.adoptedFacilities}</span>
+              <span>Pending deployment</span>
             </div>
           </div>
           <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(148, 163, 184, 0.1)', color: '#64748B', fontSize: '0.65rem' }}>
-            <div><strong>Turn Time:</strong> Avg minutes per truck (Target: 24)</div>
-            <div><strong>Ghosts:</strong> Untracked assets needing manual search</div>
+            <div><strong>Avg YVS:</strong> {stats.avgYVS} | <strong>Adoption:</strong> {stats.adoptionRate}%</div>
+            <div><strong>Network ROI:</strong> ${(stats.projectedAnnualROI / 1000000).toFixed(1)}M annually</div>
           </div>
         </div>
       )}
 
       {/* Leaderboard List */}
       <ul style={{ listStyle: 'none', margin: 0, padding: '8px 10px' }}>
-        {sortedData.map((facility, index) => {
-          const isUser = facility.name.includes('(You)');
-          const scoreColor = getScoreColor(facility.score);
+        {leaderboard.map((facility, index) => {
+          const isChampion = facility.adoptionStatus === 'champion';
+          const scoreColor = getScoreColor(facility.yvsScore);
+          const trend = getTrendData(facility);
           
           return (
             <li key={facility.id} style={{
@@ -173,9 +169,9 @@ export default function Leaderboard() {
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: '8px 6px',
-              borderBottom: index !== sortedData.length - 1 ? '1px solid rgba(148, 163, 184, 0.08)' : 'none',
-              background: isUser ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-              borderLeft: isUser ? '3px solid #3B82F6' : '3px solid transparent',
+              borderBottom: index !== leaderboard.length - 1 ? '1px solid rgba(148, 163, 184, 0.08)' : 'none',
+              background: isChampion ? 'rgba(245, 158, 11, 0.1)' : 'transparent',
+              borderLeft: isChampion ? '3px solid #F59E0B' : '3px solid transparent',
               borderRadius: '4px'
             }}>
               {/* Rank & Name */}
@@ -190,21 +186,21 @@ export default function Leaderboard() {
                 </span>
                 <div style={{ flex: 1 }}>
                   <div style={{ 
-                    fontWeight: isUser ? '600' : '400', 
-                    color: isUser ? '#E2E8F0' : '#94A3B8',
-                    fontSize: '0.8rem',
+                    fontWeight: isChampion ? '600' : '400', 
+                    color: isChampion ? '#E2E8F0' : '#94A3B8',
+                    fontSize: '0.75rem',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px'
                   }}>
-                    {facility.name}
-                    <span style={{ fontSize: '0.85rem' }}>{getScoreEmoji(facility.score)}</span>
+                    {facility.name.replace('US PL ', '').replace(' Factory', '').replace(' Distribution', ' DC')}
+                    <span style={{ fontSize: '0.8rem' }}>{getScoreEmoji(facility.yvsScore)}</span>
                   </div>
-                  <div style={{ fontSize: '0.65rem', color: '#64748B', display: 'flex', gap: '8px', marginTop: '2px' }}>
-                    <span>{facility.tier}</span>
-                    {facility.turnTime && <span>◷ {facility.turnTime}m</span>}
-                    {facility.ghostCount !== undefined && facility.ghostCount > 0 && (
-                      <span style={{ color: '#F59E0B' }}>◌ {facility.ghostCount}</span>
+                  <div style={{ fontSize: '0.6rem', color: '#64748B', display: 'flex', gap: '8px', marginTop: '2px' }}>
+                    <span>{facility.state}</span>
+                    <span>◷ {facility.avgTurnTime}m</span>
+                    {facility.ghostSearches > 0 && (
+                      <span style={{ color: '#F59E0B' }}>◌ {facility.ghostSearches}</span>
                     )}
                   </div>
                 </div>
@@ -217,13 +213,13 @@ export default function Leaderboard() {
                   fontWeight: '600', 
                   color: scoreColor
                 }}>
-                  {facility.score.toFixed(1)}
+                  {facility.yvsScore.toFixed(1)}
                 </div>
                 <div style={{ 
-                  fontSize: '0.65rem', 
-                  color: facility.trend === 'up' ? '#10B981' : facility.trend === 'down' ? '#EF4444' : '#64748B' 
+                  fontSize: '0.6rem', 
+                  color: trend.direction === 'up' ? '#10B981' : trend.direction === 'down' ? '#EF4444' : '#64748B' 
                 }}>
-                  {facility.trend === 'up' ? '▲ +2.1' : facility.trend === 'down' ? '▼ -1.8' : '— 0.0'}
+                  {trend.direction === 'up' ? '▲' : trend.direction === 'down' ? '▼' : '—'} {trend.change}
                 </div>
               </div>
             </li>
@@ -231,7 +227,7 @@ export default function Leaderboard() {
         })}
       </ul>
       
-      {/* Footer - KPI Target */}
+      {/* Footer - Network Stats */}
       <div style={{ 
         padding: '10px 12px', 
         textAlign: 'center', 
@@ -239,11 +235,11 @@ export default function Leaderboard() {
         borderTop: '1px solid rgba(148, 163, 184, 0.1)',
         background: 'rgba(10, 14, 20, 0.4)'
       }}>
-        <div style={{ color: '#3B82F6', fontWeight: '600', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Network Target</div>
+        <div style={{ color: '#3B82F6', fontWeight: '600', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Network Status</div>
         <div style={{ color: '#94A3B8' }}>
-          Turn Time: <span style={{ color: '#10B981' }}>24 MIN</span> | 
-          Ghost Count: <span style={{ color: '#10B981' }}>0</span> | 
-          YVS: <span style={{ color: '#10B981' }}>80+</span>
+          Facilities: <span style={{ color: '#10B981' }}>{stats.adoptedFacilities}/{stats.totalFacilities}</span> | 
+          Avg Improvement: <span style={{ color: '#10B981' }}>+{stats.avgTurnTimeImprovement}%</span> | 
+          YVS: <span style={{ color: '#10B981' }}>{stats.avgYVS}</span>
         </div>
       </div>
     </div>
