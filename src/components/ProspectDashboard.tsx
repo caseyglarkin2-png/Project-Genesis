@@ -338,23 +338,21 @@ export default function ProspectDashboard() {
         </div>
 
         <div style={styles.detailPane}>
-          {selected ? (
+          {/* Keep map div always mounted so Mapbox stays bound after closing detail pane */}
+          <div ref={mapContainer} style={{ ...styles.map, display: selected ? 'none' : 'block' }} />
+          {!selected && !MAPBOX_TOKEN && (
+            <div style={styles.mapMissing}>NEXT_PUBLIC_MAPBOX_TOKEN not set — map disabled.</div>
+          )}
+          {!selected && result && sortedYards.length > 0 && (
+            <div style={styles.hint}>Click a yard pin or row to see real OSM-derived geometry.</div>
+          )}
+          {selected && (
             <YardDetailPane
               yard={selected}
               apiBase={API_BASE}
               mapboxToken={MAPBOX_TOKEN}
               onClose={() => setSelected(null)}
             />
-          ) : (
-            <>
-              <div ref={mapContainer} style={styles.map} />
-              {!MAPBOX_TOKEN && (
-                <div style={styles.mapMissing}>NEXT_PUBLIC_MAPBOX_TOKEN not set — map disabled.</div>
-              )}
-              {result && sortedYards.length > 0 && (
-                <div style={styles.hint}>Click a yard pin or row to see real OSM-derived geometry.</div>
-              )}
-            </>
           )}
         </div>
       </section>
