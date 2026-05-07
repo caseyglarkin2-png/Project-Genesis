@@ -58,3 +58,7 @@ satellite_tile_mock.jpg
 *.tmp
 tsconfig.tsbuildinfo
 .vercel
+
+# Discovery / scoring artifacts
+backend/cache.db
+backend/anchor_scores.csv

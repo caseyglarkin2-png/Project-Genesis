@@ -20,8 +20,12 @@ import cache
 
 OVERPASS_URL = os.environ.get('OVERPASS_URL', 'https://overpass-api.de/api/interpreter')
 OVERPASS_TIMEOUT_S = 25
-SEARCH_RADIUS_M = 500            # ~500m around the geocoded centroid
+SEARCH_RADIUS_M = 1000           # 1km bbox so we still hit the yard when geocode is off-pin
 TRAILER_SLOT_M2 = 165             # 53ft trailer footprint w/ aisle share
+
+# Explicit industrial-building tag values (per discovery spec). Used to flag
+# real industrial polygons even when no landuse=industrial polygon is mapped.
+INDUSTRIAL_BUILDING_VALUES = {'warehouse', 'industrial', 'manufacture', 'factory'}
 
 EARTH_R = 6_371_000
 
@@ -40,8 +44,11 @@ def _query(lat: float, lon: float) -> Optional[dict]:
         return cached
 
     bbox = _bbox(lat, lon, SEARCH_RADIUS_M)
-    # Pull industrial landuse, parking surfaces, buildings (for total footprint),
-    # and highway ways inside the bbox. `out geom` returns geometry inline.
+    # Pull industrial landuse, parking surfaces, buildings (for total footprint
+    # and industrial-tag classification), surface paving, and highway ways
+    # inside the bbox. `out geom` returns inline geometry. The generic
+    # way["building"] match covers warehouse/industrial/manufacture/factory;
+    # we classify by tag value in Python.
     ql = f"""
     [out:json][timeout:{OVERPASS_TIMEOUT_S}];
     (
@@ -55,7 +62,12 @@ def _query(lat: float, lon: float) -> Optional[dict]:
     out geom tags;
     """
     try:
-        resp = requests.post(OVERPASS_URL, data={'data': ql}, timeout=OVERPASS_TIMEOUT_S + 5)
+        resp = requests.post(
+            OVERPASS_URL,
+            data={'data': ql},
+            timeout=OVERPASS_TIMEOUT_S + 5,
+            headers={'User-Agent': 'YardFlow-Genesis/1.0 (yardflow.ai)'},
+        )
         resp.raise_for_status()
         data = resp.json()
     except Exception as e:
@@ -103,6 +115,7 @@ def measure_facility(lat: float, lon: float, include_geometry: bool = False) -> 
 
     elements = data['elements']
     industrial_m2 = 0.0
+    industrial_building_m2 = 0.0
     parking_m2 = 0.0
     paved_surface_m2 = 0.0
     building_m2 = 0.0
@@ -140,6 +153,12 @@ def measure_facility(lat: float, lon: float, include_geometry: bool = False) -> 
         if 'building' in tags:
             building_m2 += area
             building_polys.append(geom)
+            if tags.get('building') in INDUSTRIAL_BUILDING_VALUES:
+                industrial_building_m2 += area
+                # Also count industrial buildings as part of the operational
+                # polygon so paved% has a sensible denominator at sites that
+                # are mapped as building footprints rather than landuse polys.
+                industrial_polys.append(geom)
 
     operational_m2 = max(industrial_m2, parking_m2 + paved_surface_m2 + building_m2)
     paved_pct = 100.0 * (parking_m2 + paved_surface_m2) / operational_m2 if operational_m2 > 0 else 0.0
@@ -152,10 +171,18 @@ def measure_facility(lat: float, lon: float, include_geometry: bool = False) -> 
     # Gate count: highway ways that intersect the perimeter of the industrial polygon.
     gate_nodes, gate_points = _count_gate_intersections(industrial_polys, highway_ways, return_points=True)
 
-    # Confidence
-    if industrial_m2 + parking_m2 > 5_000:
+    # Confidence (spec):
+    #   HIGH   — real OSM industrial polygon found (landuse=industrial OR a
+    #            sizable industrial-tagged building).
+    #   MEDIUM — only parking / generic buildings / paved surfaces; no
+    #            industrial polygon, but enough operational signal to score.
+    #   LOW    — nothing meaningful in OSM → deterministic fallback.
+    has_industrial_polygon = industrial_m2 > 0 or industrial_building_m2 > 1000
+    has_operational_signal = (parking_m2 + paved_surface_m2 + building_m2) > 500
+
+    if has_industrial_polygon:
         confidence = 'HIGH'
-    elif building_m2 + paved_surface_m2 > 2_000:
+    elif has_operational_signal:
         confidence = 'MEDIUM'
     else:
         confidence = 'LOW'
@@ -174,6 +201,7 @@ def measure_facility(lat: float, lon: float, include_geometry: bool = False) -> 
         'paved_area_m2': round(parking_m2 + paved_surface_m2, 1),
         'parking_area_m2': round(parking_m2, 1),
         'industrial_m2': round(industrial_m2, 1),
+        'industrial_building_m2': round(industrial_building_m2, 1),
         'building_m2': round(building_m2, 1),
         'confidence': confidence,
         'source': 'osm',
@@ -249,6 +277,7 @@ def _fallback(lat: float, lon: float, reason: str, overlay: Optional[Dict] = Non
         'paved_area_m2': 0.0,
         'parking_area_m2': 0.0,
         'industrial_m2': 0.0,
+        'industrial_building_m2': 0.0,
         'building_m2': 0.0,
         'confidence': 'LOW',
         'source': f'fallback:{reason}',
