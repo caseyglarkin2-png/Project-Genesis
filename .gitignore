@@ -56,3 +56,4 @@ yarn-error.log*
 temp_request.jpg
 satellite_tile_mock.jpg
 *.tmp
+tsconfig.tsbuildinfo

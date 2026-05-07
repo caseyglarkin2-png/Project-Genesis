@@ -16,9 +16,9 @@ Endpoints:
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dragnet import (
-    calculate_velocity_score, 
-    mock_yolo_inference, 
-    mock_sam_segmentation, 
+    calculate_velocity_score,
+    mock_yolo_inference,
+    mock_sam_segmentation,
     detect_gate_nodes,
     classify_facility,
     explain_score_breakdown,
@@ -26,9 +26,24 @@ from dragnet import (
     MAX_TRAILER_BENCHMARK,
     MAX_GATE_BENCHMARK
 )
+from discovery import discover_facilities
+from overpass_scoring import measure_facility
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend communication
+
+
+def _score_one(lat: float, lon: float, real: bool):
+    """Run the YVS pipeline at one point. Returns (paved%, trailers, gates, meta)."""
+    if real:
+        m = measure_facility(lat, lon)
+        return m['paved_area_pct'], m['trailer_count'], m['gate_nodes'], m
+    return (
+        mock_sam_segmentation('temp_request.jpg'),
+        mock_yolo_inference('temp_request.jpg')['trailers'],
+        detect_gate_nodes(lat, lon),
+        {'source': 'mock', 'confidence': 'MOCK'},
+    )
 
 @app.route('/', methods=['GET'])
 def health_check():
@@ -162,26 +177,15 @@ def get_score():
     lat = float(request.args.get('lat', 34.754))
     lon = float(request.args.get('lon', -78.789))
     facility_name = request.args.get('name', 'Unknown Facility')
-    
-    print(f"[API] Analyzing: {facility_name} at ({lat}, {lon})")
-    
-    # 1. Mock Data Fetching (Simulating satellite tile retrieval)
-    image_path = "temp_request.jpg"
-    
-    # 2. Run Intelligence Pipeline
-    detections = mock_yolo_inference(image_path)
-    paved_area = mock_sam_segmentation(image_path)
-    gate_nodes = detect_gate_nodes(lat, lon)
-    
-    # 3. Calculate Score
-    score = calculate_velocity_score(paved_area, detections["trailers"], gate_nodes)
-    
-    # 4. Classify
+    real = request.args.get('real', '1').lower() not in ('0', 'false', 'no')
+
+    print(f"[API] Analyzing: {facility_name} at ({lat}, {lon}) real={real}")
+
+    paved_area, trailers, gate_nodes, meta = _score_one(lat, lon, real)
+    score = calculate_velocity_score(paved_area, trailers, gate_nodes)
     classification = classify_facility(score)
-    
-    # 5. Get detailed breakdown
-    breakdown = explain_score_breakdown(paved_area, detections["trailers"], gate_nodes, score)
-    
+    breakdown = explain_score_breakdown(paved_area, trailers, gate_nodes, score)
+
     return jsonify({
         "facility": facility_name,
         "coordinates": {"lat": lat, "lon": lon},
@@ -189,10 +193,11 @@ def get_score():
         "classification": classification["tier"],
         "classification_details": classification,
         "details": {
-            "trailers": detections["trailers"],
+            "trailers": trailers,
             "paved_pct": round(paved_area, 1),
-            "gates": gate_nodes
+            "gates": gate_nodes,
         },
+        "measurement": meta,
         "breakdown": breakdown,
         "interpretation": {
             "score_meaning": f"This facility scores {score:.1f}/100, classified as {classification['label']}",
@@ -204,6 +209,93 @@ def get_score():
             "action": classification["action"],
             "expected_roi": classification["expected_roi"]
         }
+    })
+
+
+@app.route('/api/discover', methods=['POST'])
+def discover():
+    """Domain → list of probable yards (Mapbox geocoding + dedupe)."""
+    data = request.get_json(silent=True) or {}
+    domain = (data.get('domain') or request.args.get('domain') or '').strip().lower()
+    if not domain:
+        return jsonify({'error': 'domain is required'}), 400
+    facilities = discover_facilities(domain)
+    return jsonify({'domain': domain, 'count': len(facilities), 'facilities': facilities})
+
+
+@app.route('/api/score_company', methods=['POST'])
+def score_company():
+    """Domain → discover yards → score each → ranked, aggregated whale verdict.
+
+    Request: {"domain": "primobrands.com", "real": true (default), "limit": 25}
+    Response: {
+      domain, anchor_name, yard_count, top_score, top_classification, summary, yards: [...]
+    }
+    """
+    data = request.get_json(silent=True) or {}
+    domain = (data.get('domain') or '').strip().lower()
+    if not domain:
+        return jsonify({'error': 'domain is required'}), 400
+    real = data.get('real', True)
+    limit = int(data.get('limit', 25))
+
+    facilities = discover_facilities(domain)[:limit]
+    if not facilities:
+        return jsonify({
+            'domain': domain,
+            'yard_count': 0,
+            'yards': [],
+            'message': 'No facilities found via Mapbox geocoding for this domain.',
+        })
+
+    yards = []
+    paved_total_m2 = 0.0
+    parking_total_m2 = 0.0
+    total_trailers = 0
+    total_gates = 0
+    for f in facilities:
+        paved_pct, trailers, gates, meta = _score_one(f['lat'], f['lon'], real)
+        score = calculate_velocity_score(paved_pct, trailers, gates)
+        cls = classify_facility(score)
+        paved_total_m2 += float(meta.get('paved_area_m2', 0) or 0)
+        parking_total_m2 += float(meta.get('parking_area_m2', 0) or 0)
+        total_trailers += trailers
+        total_gates += gates
+        yards.append({
+            'name': f['name'],
+            'address': f['address'],
+            'lat': f['lat'],
+            'lon': f['lon'],
+            'score': round(score, 1),
+            'classification': cls['label'],
+            'tier': cls['tier'],
+            'emoji': cls['emoji'],
+            'details': {'paved_pct': round(paved_pct, 1), 'trailers': trailers, 'gates': gates},
+            'measurement': meta,
+            'source': f.get('source'),
+        })
+
+    yards.sort(key=lambda y: y['score'], reverse=True)
+    top = yards[0]
+    whales = sum(1 for y in yards if y['score'] >= 80)
+    standards = sum(1 for y in yards if 50 <= y['score'] < 80)
+
+    return jsonify({
+        'domain': domain,
+        'yard_count': len(yards),
+        'top_score': top['score'],
+        'top_classification': top['classification'],
+        'summary': {
+            'whales': whales,
+            'standards': standards,
+            'low': len(yards) - whales - standards,
+            'paved_area_total_m2': round(paved_total_m2, 1),
+            'parking_area_total_m2': round(parking_total_m2, 1),
+            'trailer_capacity_est': total_trailers,
+            'gate_count_total': total_gates,
+            'avg_score': round(sum(y['score'] for y in yards) / len(yards), 1),
+        },
+        'yards': yards,
     })
 
 @app.route('/api/batch', methods=['POST'])
