@@ -60,13 +60,15 @@ def score_domain(domain: str):
 def main(argv: List[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--domain', help='Run a single domain instead of all anchors')
-    parser.add_argument('--push', action='store_true', help='Push results to HubSpot')
+    parser.add_argument('--push', action='store_true', help='Push aggregate YVS to HubSpot')
+    parser.add_argument('--push-drive', action='store_true', help='Append to TAM Hitlist + per-yard Drive sheet')
     parser.add_argument('--out', default='backend/anchor_scores.csv', help='Output CSV path')
     args = parser.parse_args(argv)
 
     domains = [args.domain] if args.domain else list(ANCHOR_HINTS.keys())
 
     rows = []
+    detail_rows: List[dict] = []
     for domain in domains:
         print(f'\n=== {domain} ===')
         result = score_domain(domain)
@@ -80,6 +82,16 @@ def main(argv: List[str]) -> int:
         if args.push:
             from hubspot_writer import push_company_yvs
             push_company_yvs(domain, summary, summary['dossier_url'])
+
+        if args.push_drive:
+            from drive_writer import update_hitlist_dossier, yard_to_detail_row
+            update_hitlist_dossier(domain, summary['dossier_url'], summary)
+            for rank, yard in enumerate(yards, start=1):
+                detail_rows.append(yard_to_detail_row(domain, domain, rank, yard, summary['dossier_url']))
+
+    if args.push_drive and detail_rows:
+        from drive_writer import append_yard_details
+        append_yard_details(detail_rows)
 
     if rows:
         with open(args.out, 'w', newline='') as fh:
