@@ -212,6 +212,29 @@ def get_score():
     })
 
 
+@app.route('/api/yard_detail', methods=['GET'])
+def yard_detail():
+    """Full per-yard breakdown with OSM polygon GeoJSON for the drill-down map."""
+    lat = float(request.args.get('lat'))
+    lon = float(request.args.get('lon'))
+    name = request.args.get('name', '')
+
+    m = measure_facility(lat, lon, include_geometry=True)
+    score = calculate_velocity_score(m['paved_area_pct'], m['trailer_count'], m['gate_nodes'])
+    cls = classify_facility(score)
+    breakdown = explain_score_breakdown(m['paved_area_pct'], m['trailer_count'], m['gate_nodes'], score)
+
+    return jsonify({
+        'name': name,
+        'lat': lat,
+        'lon': lon,
+        'score': round(score, 1),
+        'classification': cls,
+        'measurement': m,
+        'breakdown': breakdown,
+    })
+
+
 @app.route('/api/discover', methods=['POST'])
 def discover():
     """Domain → list of probable yards (Mapbox geocoding + dedupe)."""

@@ -89,7 +89,7 @@ def _is_closed(way: dict) -> bool:
     return len(g) >= 3 and g[0]['lat'] == g[-1]['lat'] and g[0]['lon'] == g[-1]['lon']
 
 
-def measure_facility(lat: float, lon: float) -> Dict:
+def measure_facility(lat: float, lon: float, include_geometry: bool = False) -> Dict:
     """Return real measurements for a facility centroid.
 
     Returns dict with:
@@ -109,6 +109,9 @@ def measure_facility(lat: float, lon: float) -> Dict:
     bbox_m2 = (SEARCH_RADIUS_M * 2) ** 2  # rough denominator for paved %
 
     industrial_polys: List[List[dict]] = []
+    parking_polys: List[List[dict]] = []
+    paved_polys: List[List[dict]] = []
+    building_polys: List[List[dict]] = []
     highway_ways: List[dict] = []
 
     for el in elements:
@@ -130,10 +133,13 @@ def measure_facility(lat: float, lon: float) -> Dict:
             industrial_polys.append(geom)
         if tags.get('amenity') == 'parking':
             parking_m2 += area
+            parking_polys.append(geom)
         if tags.get('surface') in ('asphalt', 'concrete', 'paved'):
             paved_surface_m2 += area
+            paved_polys.append(geom)
         if 'building' in tags:
             building_m2 += area
+            building_polys.append(geom)
 
     operational_m2 = max(industrial_m2, parking_m2 + paved_surface_m2 + building_m2)
     paved_pct = 100.0 * (parking_m2 + paved_surface_m2) / operational_m2 if operational_m2 > 0 else 0.0
@@ -144,7 +150,7 @@ def measure_facility(lat: float, lon: float) -> Dict:
     trailer_count = int((parking_m2 + 0.4 * paved_surface_m2) / TRAILER_SLOT_M2) if parking_m2 + paved_surface_m2 > 0 else 0
 
     # Gate count: highway ways that intersect the perimeter of the industrial polygon.
-    gate_nodes = _count_gate_intersections(industrial_polys, highway_ways)
+    gate_nodes, gate_points = _count_gate_intersections(industrial_polys, highway_ways, return_points=True)
 
     # Confidence
     if industrial_m2 + parking_m2 > 5_000:
@@ -161,7 +167,7 @@ def measure_facility(lat: float, lon: float) -> Dict:
             'parking_area_m2': parking_m2,
         })
 
-    return {
+    result = {
         'paved_area_pct': round(paved_pct, 1),
         'trailer_count': trailer_count,
         'gate_nodes': max(gate_nodes, 1),
@@ -172,15 +178,28 @@ def measure_facility(lat: float, lon: float) -> Dict:
         'confidence': confidence,
         'source': 'osm',
     }
+    if include_geometry:
+        result['geometry'] = {
+            'industrial': industrial_polys,
+            'parking': parking_polys,
+            'paved_surface': paved_polys,
+            'buildings': building_polys,
+            'gate_points': gate_points,
+        }
+    return result
 
 
-def _count_gate_intersections(polys: List[List[dict]], highways: List[dict]) -> int:
+def _count_gate_intersections(polys: List[List[dict]], highways: List[dict], return_points: bool = False):
     """Approximate gate count: number of highway ways whose endpoints are inside one
-    industrial polygon and outside it (or vice versa)."""
+    industrial polygon and outside it (or vice versa).
+
+    Returns (count, gate_points) when return_points=True, else just count.
+    """
     if not polys or not highways:
-        return 0
+        return (0, []) if return_points else 0
     count = 0
     seen_ways = set()
+    gate_points: List[Dict] = []
     for way in highways:
         geom = way.get('geometry') or []
         if len(geom) < 2:
@@ -193,8 +212,10 @@ def _count_gate_intersections(polys: List[List[dict]], highways: List[dict]) -> 
                 if wid not in seen_ways:
                     seen_ways.add(wid)
                     count += 1
+                    boundary_pt = geom[0] if inside_last else geom[-1]
+                    gate_points.append({'lat': boundary_pt['lat'], 'lon': boundary_pt['lon']})
                 break
-    return count
+    return (count, gate_points) if return_points else count
 
 
 def _point_in_poly(pt: dict, poly: List[dict]) -> bool:
